@@ -134,9 +134,89 @@ html, body {
   box-shadow: 0 0 8px var(--pink);
 }
 
+.video-task {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin-bottom: 8px;
+  transition: border-color 0.15s, background 0.15s;
+}
+.video-task .video-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg);
+}
+.video-task .video-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.video-task input[type='number'] {
+  width: 70px;
+  background: #0d0d0d;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 8px;
+  color: var(--fg);
+  font-size: 16px;
+  font-weight: 700;
+  text-align: right;
+  font-family: inherit;
+  -moz-appearance: textfield;
+}
+.video-task input[type='number']::-webkit-outer-spin-button,
+.video-task input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.video-task input[type='number']:focus {
+  outline: none;
+  border-color: var(--cyan);
+}
+.video-task .video-unit {
+  font-size: 12px;
+  color: var(--fg-dim);
+}
+.video-task .video-target {
+  font-size: 11px;
+  color: var(--fg-dim);
+}
+.video-task.none {
+  border-color: var(--border);
+}
+.video-task.none input[type='number'] {
+  color: var(--fg-dim);
+}
+.video-task.partial {
+  border-color: #f59e0b;
+  background: rgba(245, 158, 11, 0.08);
+}
+.video-task.partial input[type='number'] {
+  color: #f59e0b;
+}
+.video-task.partial .video-label {
+  color: #f59e0b;
+}
+.video-task.achieved {
+  border-color: var(--success);
+  background: rgba(34, 197, 94, 0.1);
+}
+.video-task.achieved input[type='number'] {
+  color: var(--success);
+}
+.video-task.achieved .video-label,
+.video-task.achieved .video-target {
+  color: var(--success);
+}
+
 .tasks {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 6px;
   margin-bottom: 12px;
 }
@@ -668,6 +748,6 @@ html, body {
 
 @media (min-width: 640px) {
   .tasks {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
   }
 }

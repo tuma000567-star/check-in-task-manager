@@ -1,44 +1,83 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase.js';
 import { calculateCurrentDay, getTodayLog, MAX_CHECKIN_DAYS } from '../utils/checkin.js';
 import { todayIso } from '../utils/dates.js';
 
-const TASK_FIELDS = [
-  { key: 'video_180min', label: '180分動画' },
+const BOOL_TASKS = [
   { key: 'get_button', label: 'GETボタン' },
   { key: 'receive_button', label: '受取ボタン' },
   { key: 'ad_watch', label: '広告視聴' },
 ];
 
+const VIDEO_TARGET = 180;
+
+function videoStateClass(minutes) {
+  if (minutes == null || minutes === '' || Number(minutes) <= 0) return 'none';
+  if (Number(minutes) >= VIDEO_TARGET) return 'achieved';
+  return 'partial';
+}
+
 export default function DeviceCard({ device, logs, task, onChange }) {
   const [saving, setSaving] = useState(false);
   const [localTask, setLocalTask] = useState(task || {});
+  const [videoMinutes, setVideoMinutes] = useState(
+    task?.video_minutes != null ? String(task.video_minutes) : ''
+  );
   const currentDay = useMemo(() => calculateCurrentDay(device, logs), [device, logs]);
   const todayLog = getTodayLog(device, logs);
 
-  async function toggleTask(field) {
-    if (!supabase || saving) return;
+  useEffect(() => {
+    setLocalTask(task || {});
+    setVideoMinutes(task?.video_minutes != null ? String(task.video_minutes) : '');
+  }, [task]);
+
+  async function persistTask(patch) {
+    if (!supabase) return;
+    const merged = { ...localTask, ...patch };
+    const minutesRaw = patch.video_minutes !== undefined ? patch.video_minutes : merged.video_minutes;
+    const parsedMinutes =
+      minutesRaw === '' || minutesRaw == null ? null : parseInt(minutesRaw, 10);
+    const payload = {
+      device_id: device.id,
+      task_date: todayIso(),
+      video_180min: parsedMinutes != null && parsedMinutes >= VIDEO_TARGET,
+      video_minutes: Number.isNaN(parsedMinutes) ? null : parsedMinutes,
+      get_button: !!merged.get_button,
+      receive_button: !!merged.receive_button,
+      ad_watch: !!merged.ad_watch,
+    };
+    const { error } = await supabase
+      .from('daily_tasks')
+      .upsert(payload, { onConflict: 'device_id,task_date' });
+    if (error) throw error;
+    setLocalTask({ ...merged, video_minutes: payload.video_minutes });
+  }
+
+  async function toggleBool(field) {
+    if (saving) return;
     setSaving(true);
-    const nextValue = !localTask[field];
-    const newTask = { ...localTask, [field]: nextValue };
-    setLocalTask(newTask);
+    const prev = localTask;
     try {
-      const payload = {
-        device_id: device.id,
-        task_date: todayIso(),
-        video_180min: !!newTask.video_180min,
-        get_button: !!newTask.get_button,
-        receive_button: !!newTask.receive_button,
-        ad_watch: !!newTask.ad_watch,
-      };
-      const { error } = await supabase
-        .from('daily_tasks')
-        .upsert(payload, { onConflict: 'device_id,task_date' });
-      if (error) throw error;
+      await persistTask({ [field]: !localTask[field] });
     } catch (e) {
       alert('タスク保存失敗: ' + e.message);
-      setLocalTask(localTask);
+      setLocalTask(prev);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function saveVideoMinutes(value) {
+    if (saving) return;
+    const prev = localTask.video_minutes;
+    if (String(prev ?? '') === String(value ?? '')) return;
+    setSaving(true);
+    try {
+      await persistTask({ video_minutes: value === '' ? null : value });
+    } catch (e) {
+      alert('動画分数の保存失敗: ' + e.message);
+      setVideoMinutes(prev != null ? String(prev) : '');
     } finally {
       setSaving(false);
     }
@@ -74,6 +113,8 @@ export default function DeviceCard({ device, logs, task, onChange }) {
     }
   }
 
+  const videoCls = videoStateClass(videoMinutes);
+
   return (
     <div className="device-card">
       <div className="card-top">
@@ -98,14 +139,35 @@ export default function DeviceCard({ device, logs, task, onChange }) {
         </div>
       </div>
 
+      <div className={'video-task ' + videoCls}>
+        <span className="video-label">動画視聴</span>
+        <div className="video-input-wrap">
+          <input
+            type="number"
+            inputMode="numeric"
+            min="0"
+            placeholder="0"
+            value={videoMinutes}
+            disabled={saving}
+            onChange={(e) => setVideoMinutes(e.target.value)}
+            onBlur={(e) => saveVideoMinutes(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') e.target.blur(); }}
+          />
+          <span className="video-unit">分</span>
+        </div>
+        <span className="video-target">
+          {videoCls === 'achieved' ? '✅ 達成' : `/ ${VIDEO_TARGET}分`}
+        </span>
+      </div>
+
       <div className="tasks">
-        {TASK_FIELDS.map((t) => (
+        {BOOL_TASKS.map((t) => (
           <label key={t.key} className={'task-row ' + (localTask[t.key] ? 'checked' : '')}>
             <input
               type="checkbox"
               checked={!!localTask[t.key]}
               disabled={saving}
-              onChange={() => toggleTask(t.key)}
+              onChange={() => toggleBool(t.key)}
             />
             <span>{t.label}</span>
           </label>
