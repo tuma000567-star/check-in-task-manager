@@ -13,6 +13,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
   const [error, setError] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const today = todayIso();
 
@@ -71,6 +72,35 @@ export default function Home() {
     return m;
   }, [cycles, devices]);
 
+  const homeStats = useMemo(() => {
+    const total = devices.length;
+    let successCount = 0;
+    let errorCount = 0;
+    for (const d of devices) {
+      const todayLog = logs.find(
+        (l) => l.device_id === d.id && l.log_date === today
+      );
+      if (!todayLog) continue;
+      if (todayLog.status === 'success') successCount += 1;
+      else if (todayLog.status === 'error') errorCount += 1;
+    }
+    const pendingCount = total - successCount - errorCount;
+    const rate = total ? Math.round((successCount / total) * 100) : 0;
+    return { total, successCount, errorCount, pendingCount, rate };
+  }, [devices, logs, today]);
+
+  const filteredDevices = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return devices;
+    return devices.filter((d) => {
+      if (d.name?.toLowerCase().includes(q)) return true;
+      if (d.birth_method?.toLowerCase().includes(q)) return true;
+      if (d.parent_name?.toLowerCase().includes(q)) return true;
+      if (d.notes?.toLowerCase().includes(q)) return true;
+      return false;
+    });
+  }, [devices, searchQuery]);
+
   return (
     <div className="page home">
       <header className="home-header">
@@ -80,6 +110,57 @@ export default function Home() {
 
       {error && <div className="error-box">エラー: {error}</div>}
 
+      {!loading && devices.length > 0 && (
+        <>
+          <div className="home-stats">
+            <div className="hstat total">
+              <div className="hstat-num">{homeStats.total}</div>
+              <div className="hstat-lbl">合計台数</div>
+            </div>
+            <div className="hstat success">
+              <div className="hstat-num">{homeStats.successCount}</div>
+              <div className="hstat-lbl">本日成功</div>
+            </div>
+            <div className="hstat error">
+              <div className="hstat-num">{homeStats.errorCount}</div>
+              <div className="hstat-lbl">エラー</div>
+            </div>
+            <div className="hstat rate">
+              <div className="hstat-num">
+                {homeStats.rate}<span className="hstat-pct">%</span>
+              </div>
+              <div className="hstat-lbl">達成率</div>
+            </div>
+          </div>
+
+          <div className="search-bar">
+            <span className="search-icon">🔍</span>
+            <input
+              type="search"
+              placeholder="端末名・メモで検索"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                className="search-clear"
+                onClick={() => setSearchQuery('')}
+                aria-label="クリア"
+              >
+                ×
+              </button>
+            )}
+          </div>
+
+          {searchQuery && (
+            <div className="search-result">
+              {filteredDevices.length} 件ヒット
+            </div>
+          )}
+        </>
+      )}
+
       {loading ? (
         <div className="loading">読み込み中...</div>
       ) : devices.length === 0 ? (
@@ -87,9 +168,14 @@ export default function Home() {
           <p>端末がまだありません</p>
           <p className="hint">右下の「＋」から追加してください</p>
         </div>
+      ) : filteredDevices.length === 0 ? (
+        <div className="empty">
+          <p>該当する端末がありません</p>
+          <p className="hint">検索条件を変えてみてください</p>
+        </div>
       ) : (
         <div className="device-list">
-          {devices.map((d) => (
+          {filteredDevices.map((d) => (
             <DeviceCard
               key={d.id}
               device={d}

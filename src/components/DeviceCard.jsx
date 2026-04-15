@@ -138,7 +138,8 @@ export default function DeviceCard({ device, logs, task, currentCycle, onChange 
 
       <div className="progress-wrap">
         <div className="progress-label">
-          Day <strong>{currentDay}</strong> / {MAX_CHECKIN_DAYS}
+          <span>チェックイン進捗</span>
+          <span>Day <strong>{currentDay}</strong> / {MAX_CHECKIN_DAYS}</span>
         </div>
         <div className="progress-bar">
           {Array.from({ length: MAX_CHECKIN_DAYS }).map((_, i) => (

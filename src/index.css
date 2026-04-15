@@ -57,7 +57,7 @@ html, body {
 /* ホーム */
 .home-header {
   text-align: center;
-  padding: 16px 0 8px;
+  padding: 12px 0 6px;
 }
 .date-big {
   font-size: 22px;
@@ -68,25 +68,133 @@ html, body {
 }
 .subtitle {
   color: var(--fg-dim);
-  font-size: 12px;
-  margin-top: 4px;
-  letter-spacing: 0.1em;
+  font-size: 11px;
+  margin-top: 2px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+/* ホーム統計 */
+.home-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin: 14px 0 12px;
+}
+.hstat {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 8px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.hstat::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.02));
+  pointer-events: none;
+}
+.hstat-num {
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--fg);
+}
+.hstat-pct {
+  font-size: 13px;
+  color: var(--fg-dim);
+  margin-left: 2px;
+}
+.hstat-lbl {
+  font-size: 10px;
+  color: var(--fg-dim);
+  margin-top: 6px;
+  letter-spacing: 0.05em;
+}
+.hstat.total .hstat-num { color: var(--cyan); }
+.hstat.success .hstat-num { color: var(--success); }
+.hstat.error .hstat-num { color: var(--error); }
+.hstat.rate .hstat-num {
+  background: linear-gradient(90deg, var(--cyan), var(--pink));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* 検索バー */
+.search-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0 10px;
+  margin-bottom: 4px;
+  transition: border-color 0.15s;
+}
+.search-bar:focus-within {
+  border-color: var(--cyan);
+  box-shadow: 0 0 0 2px rgba(37, 244, 238, 0.1);
+}
+.search-icon {
+  font-size: 14px;
+  opacity: 0.6;
+  margin-right: 6px;
+}
+.search-bar input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--fg);
+  font-size: 15px;
+  font-family: inherit;
+  padding: 12px 4px;
+  outline: none;
+}
+.search-bar input::placeholder {
+  color: var(--fg-dim);
+}
+.search-bar input::-webkit-search-cancel-button {
+  display: none;
+}
+.search-clear {
+  background: none;
+  border: none;
+  color: var(--fg-dim);
+  font-size: 22px;
+  line-height: 1;
+  padding: 0 6px;
+  cursor: pointer;
+}
+.search-clear:hover { color: var(--pink); }
+.search-result {
+  font-size: 11px;
+  color: var(--fg-dim);
+  text-align: right;
+  margin: 4px 4px 0;
 }
 
 .device-list {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  margin-top: 16px;
+  margin-top: 12px;
 }
 
 /* 端末カード */
 .device-card {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 14px;
-  box-shadow: 0 2px 12px rgba(254, 44, 85, 0.05);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25), 0 1px 2px rgba(254, 44, 85, 0.06);
+  transition: border-color 0.15s, transform 0.1s;
+}
+.device-card:active {
+  transform: scale(0.995);
 }
 .card-top {
   display: flex;
@@ -127,33 +235,37 @@ html, body {
 }
 
 .progress-wrap {
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 .progress-label {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--fg-dim);
   margin-bottom: 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
 }
 .progress-label strong {
   color: var(--pink);
-  font-size: 16px;
+  font-size: 18px;
+  font-weight: 800;
 }
 .progress-bar {
   display: grid;
   grid-template-columns: repeat(14, 1fr);
   gap: 3px;
-  height: 10px;
+  height: 12px;
 }
 .progress-cell {
-  background: #2a2a2a;
-  border-radius: 2px;
+  background: #232323;
+  border-radius: 3px;
 }
 .progress-cell.done {
-  background: var(--cyan);
+  background: linear-gradient(180deg, var(--cyan), #1ed3ce);
 }
 .progress-cell.current {
-  background: var(--pink);
-  box-shadow: 0 0 8px var(--pink);
+  background: linear-gradient(180deg, var(--pink), #ff5a7a);
+  box-shadow: 0 0 10px rgba(254, 44, 85, 0.7);
 }
 
 .video-task {
