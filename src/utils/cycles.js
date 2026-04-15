@@ -10,7 +10,27 @@ export function getCurrentCycleForDate(cycles, now = new Date()) {
   return [...eligible].sort((a, b) => b.cycle_number - a.cycle_number)[0];
 }
 
-function cyclesEqual(a, b) {
+function containsDate(cycle, isoDate) {
+  if (isoDate < cycle.start_date) return false;
+  if (cycle.end_date && isoDate > cycle.end_date) return false;
+  return true;
+}
+
+function dayNumberFor(cycle, isoDate) {
+  const [y1, m1, d1] = cycle.start_date.split('-').map(Number);
+  const [y2, m2, d2] = isoDate.split('-').map(Number);
+  const a = new Date(y1, m1 - 1, d1).getTime();
+  const b = new Date(y2, m2 - 1, d2).getTime();
+  return Math.floor((b - a) / 86400000) + 1;
+}
+
+function pickCycleForLog(cycles, isoDate) {
+  const matching = cycles.filter((c) => containsDate(c, isoDate));
+  if (matching.length === 0) return null;
+  return matching.sort((a, b) => b.cycle_number - a.cycle_number)[0];
+}
+
+function cyclesShapeEqual(a, b) {
   if (a.length !== b.length) return false;
   for (let i = 0; i < a.length; i++) {
     const x = a[i];
@@ -25,20 +45,6 @@ function cyclesEqual(a, b) {
     }
   }
   return true;
-}
-
-function containsDate(cycle, isoDate) {
-  if (isoDate < cycle.start_date) return false;
-  if (cycle.end_date && isoDate > cycle.end_date) return false;
-  return true;
-}
-
-function dayNumberFor(cycle, isoDate) {
-  const [y1, m1, d1] = cycle.start_date.split('-').map(Number);
-  const [y2, m2, d2] = isoDate.split('-').map(Number);
-  const a = new Date(y1, m1 - 1, d1).getTime();
-  const b = new Date(y2, m2 - 1, d2).getTime();
-  return Math.floor((b - a) / 86400000) + 1;
 }
 
 export async function rebuildCyclesAfterLogChange(deviceId) {
@@ -72,6 +78,7 @@ export async function rebuildCyclesAfterLogChange(deviceId) {
   }
 
   const frozenCycles = cycles.slice(0, freezeIdx + 1);
+  const nonFrozenCycles = cycles.slice(freezeIdx + 1);
 
   let rebuildStartDate;
   let rebuildCycleNumber;
@@ -109,37 +116,40 @@ export async function rebuildCyclesAfterLogChange(deviceId) {
     completed: false,
   });
 
-  const existingNonFrozen = cycles.slice(freezeIdx + 1);
-  const cyclesUnchanged = cyclesEqual(desired, existingNonFrozen);
+  const shapeUnchanged = cyclesShapeEqual(desired, nonFrozenCycles);
 
   let allCyclesNow;
-  if (cyclesUnchanged) {
+  if (shapeUnchanged) {
     allCyclesNow = cycles;
   } else {
-    if (existingNonFrozen.length > 0) {
+    if (nonFrozenCycles.length > 0) {
       const delRes = await supabase
         .from('checkin_cycles')
         .delete()
-        .in('id', existingNonFrozen.map((c) => c.id));
+        .in('id', nonFrozenCycles.map((c) => c.id));
       if (delRes.error) throw delRes.error;
     }
-    const inserts = desired.map((d) => ({
-      device_id: deviceId,
-      cycle_number: d.cycle_number,
-      start_date: d.start_date,
-      end_date: d.end_date,
-      completed: d.completed,
-    }));
-    const insRes = await supabase
-      .from('checkin_cycles')
-      .insert(inserts)
-      .select();
-    if (insRes.error) throw insRes.error;
-    allCyclesNow = [...frozenCycles, ...(insRes.data || [])];
+    let insertedCycles = [];
+    if (desired.length > 0) {
+      const inserts = desired.map((d) => ({
+        device_id: deviceId,
+        cycle_number: d.cycle_number,
+        start_date: d.start_date,
+        end_date: d.end_date,
+        completed: d.completed,
+      }));
+      const insRes = await supabase
+        .from('checkin_cycles')
+        .insert(inserts)
+        .select();
+      if (insRes.error) throw insRes.error;
+      insertedCycles = insRes.data || [];
+    }
+    allCyclesNow = [...frozenCycles, ...insertedCycles];
   }
 
   for (const log of logs) {
-    const cycle = allCyclesNow.find((c) => containsDate(c, log.log_date));
+    const cycle = pickCycleForLog(allCyclesNow, log.log_date);
     if (!cycle) continue;
     const newDay = dayNumberFor(cycle, log.log_date);
     if (log.cycle_id !== cycle.id || log.day_number !== newDay) {
@@ -156,9 +166,10 @@ export async function rebuildCyclesAfterLogChange(deviceId) {
     allCyclesNow.find((c) => !c.end_date) || allCyclesNow[allCyclesNow.length - 1];
   const deviceStart = currentCycle?.start_date || activeCycle?.start_date;
   if (deviceStart) {
-    await supabase
+    const devRes = await supabase
       .from('devices')
       .update({ checkin_start_date: deviceStart })
       .eq('id', deviceId);
+    if (devRes.error) throw devRes.error;
   }
 }
