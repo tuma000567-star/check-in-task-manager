@@ -197,6 +197,15 @@ export default function DeviceDetail() {
           <div className="info-val">{device.birth_method}</div>
         </div>
         <div className="info-item">
+          <div className="info-label">親端末</div>
+          <div className="info-val">
+            {(() => {
+              const parentDev = allDevices.find((d) => d.id === device.parent_id);
+              return parentDev?.name || device.parent_name || '—';
+            })()}
+          </div>
+        </div>
+        <div className="info-item">
           <div className="info-label">誕生日</div>
           <div className="info-val">{formatDateJa(device.birth_date)}</div>
         </div>

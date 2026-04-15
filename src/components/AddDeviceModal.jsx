@@ -32,7 +32,7 @@ function currentDayFromStartDate(iso) {
 export default function AddDeviceModal({ devices, onClose, onSaved }) {
   const [name, setName] = useState('');
   const [birthMethod, setBirthMethod] = useState('');
-  const [parentId, setParentId] = useState('');
+  const [parentText, setParentText] = useState('');
   const [birthDate, setBirthDate] = useState(todayIso());
   const [checkinStartDate, setCheckinStartDate] = useState(todayIso());
   const [currentDay, setCurrentDay] = useState(1);
@@ -66,12 +66,20 @@ export default function AddDeviceModal({ devices, onClose, onSaved }) {
     }
     setSaving(true);
     try {
+      const typedParent = parentText.trim();
+      const matchedParent = typedParent
+        ? parentCandidates.find((d) => d.name === typedParent) || null
+        : null;
+      const parentId = matchedParent?.id || null;
+      const parentName = typedParent && !matchedParent ? typedParent : null;
+
       const { data: inserted, error } = await supabase
         .from('devices')
         .insert({
           name: name.trim(),
           birth_method: birthMethod.trim(),
-          parent_id: parentId ? parentId : null,
+          parent_id: parentId,
+          parent_name: parentName,
           birth_date: birthDate,
           checkin_start_date: checkinStartDate,
           current_checkin_day: currentDay,
@@ -133,21 +141,23 @@ export default function AddDeviceModal({ devices, onClose, onSaved }) {
             />
           </label>
           <label>
-            親端末
-            <select
-              value={parentId}
-              onChange={(e) => setParentId(e.target.value)}
-            >
-              <option value="">なし</option>
+            親端末（選択 or 手入力）
+            <input
+              type="text"
+              list="parent-device-options"
+              value={parentText}
+              onChange={(e) => setParentText(e.target.value)}
+              placeholder="空欄でなし / 一覧から選択 / 新規入力"
+              autoComplete="off"
+            />
+            <datalist id="parent-device-options">
               {parentCandidates.map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.name}
-                </option>
+                <option key={d.id} value={d.name} />
               ))}
-            </select>
-            {parentCandidates.length === 0 && (
-              <span className="hint">登録済みの端末がまだありません</span>
-            )}
+            </datalist>
+            <span className="hint">
+              既存端末名と一致すれば自動で紐付け、新しい名前ならテキストとして保存されます。
+            </span>
           </label>
           <label>
             誕生日

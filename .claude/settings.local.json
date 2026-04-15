@@ -14,7 +14,9 @@
       "Bash(curl -s -H 'Authorization: Bearer sbp_b531573adef473e55ce8a1c905ba46dfafc29453' 'https://api.supabase.com/v1/projects/etlcdeshhpbdggugqznt/api-keys?reveal=true')",
       "Bash(vercel env:*)",
       "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" https://check-in-task-manager.vercel.app)",
-      "Bash(curl -s -H \"apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0bGNkZXNoaHBiZGdndWdxem50Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxODc0OTMsImV4cCI6MjA5MTc2MzQ5M30.jYmCTIKJjZaP7wEx2KeVq2tMboRzeQ734qpGQtZ2c-0\" \"https://etlcdeshhpbdggugqznt.supabase.co/rest/v1/devices?select=*&limit=1\")"
+      "Bash(curl -s -H \"apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0bGNkZXNoaHBiZGdndWdxem50Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxODc0OTMsImV4cCI6MjA5MTc2MzQ5M30.jYmCTIKJjZaP7wEx2KeVq2tMboRzeQ734qpGQtZ2c-0\" \"https://etlcdeshhpbdggugqznt.supabase.co/rest/v1/devices?select=*&limit=1\")",
+      "Bash(curl -s -X POST -H \"Authorization: Bearer sbp_d5869479b6d3a62dd31a68613c4f5c67f93c58f5\" -H \"Content-Type: application/json\" -d '{\"query\":\"ALTER TABLE devices ADD COLUMN IF NOT EXISTS parent_name text;\"}' https://api.supabase.com/v1/projects/etlcdeshhpbdggugqznt/database/query)",
+      "Bash(curl -s -X POST -H \"Authorization: Bearer sbp_d5869479b6d3a62dd31a68613c4f5c67f93c58f5\" -H \"Content-Type: application/json\" -d '{\"query\":\"select column_name, data_type from information_schema.columns where table_name='\\\\''devices'\\\\'' and column_name='\\\\''parent_name'\\\\'';\"}' https://api.supabase.com/v1/projects/etlcdeshhpbdggugqznt/database/query)"
     ]
   }
 }
