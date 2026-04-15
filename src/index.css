@@ -313,6 +313,23 @@ html, body {
   justify-content: center;
   gap: 6px;
 }
+.btn.ghost {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--fg);
+}
+.btn.ghost:hover {
+  border-color: var(--cyan);
+  color: var(--cyan);
+}
+.detail-actions {
+  display: flex;
+  gap: 8px;
+  margin: 0 0 12px;
+}
+.detail-actions .btn {
+  flex: 1;
+}
 .btn.full {
   width: 100%;
   padding: 14px;

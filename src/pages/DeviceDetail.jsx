@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase.js';
 import { buildCalendar, calculateCurrentDay } from '../utils/checkin.js';
 import { daysBetween, formatDateJa, todayIso } from '../utils/dates.js';
@@ -8,9 +8,11 @@ import {
   rebuildCyclesAfterLogChange,
 } from '../utils/cycles.js';
 import AddInvitationModal from '../components/AddInvitationModal.jsx';
+import EditDeviceModal from '../components/EditDeviceModal.jsx';
 
 export default function DeviceDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [device, setDevice] = useState(null);
   const [logs, setLogs] = useState([]);
   const [invitations, setInvitations] = useState([]);
@@ -18,7 +20,9 @@ export default function DeviceDetail() {
   const [cycles, setCycles] = useState([]);
   const [tab, setTab] = useState('checkin');
   const [showInvite, setShowInvite] = useState(false);
+  const [showEdit, setShowEdit] = useState(false);
   const [restarting, setRestarting] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [editingLogId, setEditingLogId] = useState(null);
   const [togglingLog, setTogglingLog] = useState(false);
   const [error, setError] = useState(null);
@@ -110,6 +114,24 @@ export default function DeviceDetail() {
       });
   }, [cycles, logs]);
 
+  async function handleDelete() {
+    if (!supabase || deleting) return;
+    if (!confirm(`「${device.name}」を削除しますか？関連するチェックインログ・サイクル・招待履歴・日次タスクも全て削除されます。`)) return;
+    if (!confirm('本当に削除しますか？この操作は取り消せません')) return;
+    setDeleting(true);
+    try {
+      const { error: delErr } = await supabase
+        .from('devices')
+        .delete()
+        .eq('id', id);
+      if (delErr) throw delErr;
+      navigate('/');
+    } catch (e) {
+      alert('削除失敗: ' + e.message);
+      setDeleting(false);
+    }
+  }
+
   async function toggleLogStatus(log, newStatus) {
     if (!supabase || togglingLog) return;
     if (log.status === newStatus) {
@@ -189,6 +211,25 @@ export default function DeviceDetail() {
         {currentCycle && (
           <div className="cycle-badge current">第{currentCycle.cycle_number}サイクル</div>
         )}
+      </div>
+
+      <div className="detail-actions">
+        <button
+          type="button"
+          className="btn ghost small"
+          onClick={() => setShowEdit(true)}
+          disabled={deleting}
+        >
+          ✏️ 編集
+        </button>
+        <button
+          type="button"
+          className="btn danger small"
+          onClick={handleDelete}
+          disabled={deleting}
+        >
+          🗑 {deleting ? '削除中...' : '削除'}
+        </button>
       </div>
 
       <div className="info-grid">
@@ -395,6 +436,18 @@ export default function DeviceDetail() {
             />
           )}
         </>
+      )}
+
+      {showEdit && (
+        <EditDeviceModal
+          device={device}
+          allDevices={allDevices}
+          onClose={() => setShowEdit(false)}
+          onSaved={() => {
+            setShowEdit(false);
+            load();
+          }}
+        />
       )}
     </div>
   );
