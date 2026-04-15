@@ -27,3 +27,13 @@ export function formatDateJa(d) {
   const wk = ['日', '月', '火', '水', '木', '金', '土'][date.getDay()];
   return `${y}年${m}月${day}日(${wk})`;
 }
+
+export function addDaysIso(iso, days) {
+  const [y, m, d] = iso.split('-').map(Number);
+  const date = new Date(y, m - 1, d);
+  date.setDate(date.getDate() + days);
+  const yy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, '0');
+  const dd = String(date.getDate()).padStart(2, '0');
+  return `${yy}-${mm}-${dd}`;
+}

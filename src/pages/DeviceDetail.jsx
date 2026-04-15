@@ -3,6 +3,10 @@ import { Link, useParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase.js';
 import { buildCalendar, calculateCurrentDay } from '../utils/checkin.js';
 import { daysBetween, formatDateJa, todayIso } from '../utils/dates.js';
+import {
+  getCurrentCycleForDate,
+  rebuildCyclesAfterLogChange,
+} from '../utils/cycles.js';
 import AddInvitationModal from '../components/AddInvitationModal.jsx';
 
 export default function DeviceDetail() {
@@ -15,6 +19,8 @@ export default function DeviceDetail() {
   const [tab, setTab] = useState('checkin');
   const [showInvite, setShowInvite] = useState(false);
   const [restarting, setRestarting] = useState(false);
+  const [editingLogId, setEditingLogId] = useState(null);
+  const [togglingLog, setTogglingLog] = useState(false);
   const [error, setError] = useState(null);
 
   async function load() {
@@ -47,12 +53,7 @@ export default function DeviceDetail() {
     load();
   }, [id]);
 
-  const currentCycle = useMemo(() => {
-    if (!cycles.length) return null;
-    const active = cycles.find((c) => !c.completed);
-    if (active) return active;
-    return [...cycles].sort((a, b) => b.cycle_number - a.cycle_number)[0];
-  }, [cycles]);
+  const currentCycle = useMemo(() => getCurrentCycleForDate(cycles), [cycles]);
 
   const cycleStartDate = currentCycle?.start_date || null;
 
@@ -109,14 +110,37 @@ export default function DeviceDetail() {
       });
   }, [cycles, logs]);
 
+  async function toggleLogStatus(log, newStatus) {
+    if (!supabase || togglingLog) return;
+    if (log.status === newStatus) {
+      setEditingLogId(null);
+      return;
+    }
+    const label = newStatus === 'success' ? '成功' : 'エラー';
+    if (!confirm(`${formatDateJa(log.log_date)} のログを「${label}」に変更しますか？`)) {
+      return;
+    }
+    setTogglingLog(true);
+    try {
+      const { error: upErr } = await supabase
+        .from('checkin_logs')
+        .update({ status: newStatus })
+        .eq('id', log.id);
+      if (upErr) throw upErr;
+      await rebuildCyclesAfterLogChange(id);
+      setEditingLogId(null);
+      await load();
+    } catch (e) {
+      alert('更新失敗: ' + e.message);
+    } finally {
+      setTogglingLog(false);
+    }
+  }
+
   async function handleRestart() {
     if (!supabase || restarting) return;
-    if (
-      !confirm(
-        '新しいサイクルを開始しますか？現在のサイクルを完了にして1日目からリセットします'
-      )
-    )
-      return;
+    if (!confirm('再スタートしますか？')) return;
+    if (!confirm('本当に実行しますか？この操作は取り消せません')) return;
     setRestarting(true);
     const today = todayIso();
     try {
@@ -241,14 +265,41 @@ export default function DeviceDetail() {
           </section>
 
           <section>
-            <h3 className="section-title">過去ログ</h3>
+            <h3 className="section-title">過去ログ（タップで編集）</h3>
             <ul className="log-list">
               {logs.length === 0 && <li className="empty-row">まだログがありません</li>}
               {[...logs].reverse().map((l) => (
-                <li key={l.id} className={'log-row ' + l.status}>
-                  <span>{formatDateJa(l.log_date)}</span>
-                  <span>Day {l.day_number}</span>
-                  <span>{l.status === 'success' ? '✅ 成功' : '❌ エラー'}</span>
+                <li key={l.id} className={'log-row editable ' + l.status}>
+                  <button
+                    type="button"
+                    className="log-summary"
+                    onClick={() => setEditingLogId(editingLogId === l.id ? null : l.id)}
+                    disabled={togglingLog}
+                  >
+                    <span>{formatDateJa(l.log_date)}</span>
+                    <span>Day {l.day_number}</span>
+                    <span>{l.status === 'success' ? '✅ 成功' : '❌ エラー'}</span>
+                  </button>
+                  {editingLogId === l.id && (
+                    <div className="log-actions">
+                      <button
+                        type="button"
+                        className="btn success small"
+                        disabled={togglingLog || l.status === 'success'}
+                        onClick={() => toggleLogStatus(l, 'success')}
+                      >
+                        ✅ 成功に変更
+                      </button>
+                      <button
+                        type="button"
+                        className="btn danger small"
+                        disabled={togglingLog || l.status === 'error'}
+                        onClick={() => toggleLogStatus(l, 'error')}
+                      >
+                        ❌ エラーに変更
+                      </button>
+                    </div>
+                  )}
                 </li>
               ))}
             </ul>

@@ -674,15 +674,45 @@ html, body {
 }
 .log-row {
   display: flex;
-  justify-content: space-between;
-  padding: 10px 12px;
+  flex-direction: column;
+  padding: 0;
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: 8px;
   font-size: 13px;
+  overflow: hidden;
 }
 .log-row.success { border-left: 3px solid var(--success); }
 .log-row.error { border-left: 3px solid var(--error); }
+.log-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background: transparent;
+  border: none;
+  color: var(--fg);
+  font: inherit;
+  width: 100%;
+  cursor: pointer;
+  text-align: left;
+}
+.log-summary span { flex: 1; }
+.log-summary span + span { text-align: center; }
+.log-summary span:last-child { text-align: right; }
+.log-row.editable .log-summary:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+.log-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 0 12px 12px;
+}
+.btn.small {
+  padding: 8px 10px;
+  font-size: 13px;
+}
 .empty-row {
   text-align: center;
   padding: 18px;

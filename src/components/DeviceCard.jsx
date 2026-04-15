@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase.js';
 import { calculateCurrentDay, getTodayLog, MAX_CHECKIN_DAYS } from '../utils/checkin.js';
 import { todayIso } from '../utils/dates.js';
+import { rebuildCyclesAfterLogChange } from '../utils/cycles.js';
 
 const BOOL_TASKS = [
   { key: 'get_button', label: 'GETボタン' },
@@ -114,6 +115,7 @@ export default function DeviceCard({ device, logs, task, currentCycle, onChange 
         const { error } = await supabase.from('checkin_logs').insert(insertPayload);
         if (error) throw error;
       }
+      await rebuildCyclesAfterLogChange(device.id);
       onChange && onChange();
     } catch (e) {
       alert('チェックイン保存失敗: ' + e.message);

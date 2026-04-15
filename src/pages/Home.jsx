@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../lib/supabase.js';
 import { todayIso, formatDateJa } from '../utils/dates.js';
+import { getCurrentCycleForDate } from '../utils/cycles.js';
 import DeviceCard from '../components/DeviceCard.jsx';
 import AddDeviceModal from '../components/AddDeviceModal.jsx';
 
@@ -58,21 +59,17 @@ export default function Home() {
   }, [tasks]);
 
   const currentCycleByDevice = useMemo(() => {
-    const m = {};
+    const byDevice = {};
     for (const c of cycles) {
-      const existing = m[c.device_id];
-      if (!existing) {
-        m[c.device_id] = c;
-        continue;
-      }
-      if (!c.completed && existing.completed) {
-        m[c.device_id] = c;
-      } else if (c.completed === existing.completed && c.cycle_number > existing.cycle_number) {
-        m[c.device_id] = c;
-      }
+      if (!byDevice[c.device_id]) byDevice[c.device_id] = [];
+      byDevice[c.device_id].push(c);
+    }
+    const m = {};
+    for (const d of devices) {
+      m[d.id] = getCurrentCycleForDate(byDevice[d.id] || []);
     }
     return m;
-  }, [cycles]);
+  }, [cycles, devices]);
 
   return (
     <div className="page home">
