@@ -8,6 +8,7 @@ export default function Home() {
   const [devices, setDevices] = useState([]);
   const [logs, setLogs] = useState([]);
   const [tasks, setTasks] = useState([]);
+  const [cycles, setCycles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
   const [error, setError] = useState(null);
@@ -33,6 +34,12 @@ export default function Home() {
       setDevices(devRes.data || []);
       setLogs(logRes.data || []);
       setTasks(taskRes.data || []);
+
+      const cycleRes = await supabase
+        .from('checkin_cycles')
+        .select('*')
+        .order('cycle_number');
+      if (!cycleRes.error) setCycles(cycleRes.data || []);
     } catch (e) {
       setError(e.message || String(e));
     } finally {
@@ -49,6 +56,23 @@ export default function Home() {
     for (const t of tasks) m[t.device_id] = t;
     return m;
   }, [tasks]);
+
+  const currentCycleByDevice = useMemo(() => {
+    const m = {};
+    for (const c of cycles) {
+      const existing = m[c.device_id];
+      if (!existing) {
+        m[c.device_id] = c;
+        continue;
+      }
+      if (!c.completed && existing.completed) {
+        m[c.device_id] = c;
+      } else if (c.completed === existing.completed && c.cycle_number > existing.cycle_number) {
+        m[c.device_id] = c;
+      }
+    }
+    return m;
+  }, [cycles]);
 
   return (
     <div className="page home">
@@ -74,6 +98,7 @@ export default function Home() {
               device={d}
               logs={logs}
               task={taskByDevice[d.id]}
+              currentCycle={currentCycleByDevice[d.id]}
               onChange={loadAll}
             />
           ))}

@@ -13,6 +13,7 @@ export default function Stats() {
   const [devices, setDevices] = useState([]);
   const [logs, setLogs] = useState([]);
   const [invitations, setInvitations] = useState([]);
+  const [cycles, setCycles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -34,6 +35,8 @@ export default function Stats() {
         setDevices(dev.data || []);
         setLogs(log.data || []);
         setInvitations(inv.data || []);
+        const cyc = await supabase.from('checkin_cycles').select('*');
+        if (!cyc.error) setCycles(cyc.data || []);
       } catch (e) {
         setError(e.message || String(e));
       } finally {
@@ -93,6 +96,52 @@ export default function Stats() {
     return { rows, best };
   }, [invitations]);
 
+  const cycleCompletion = useMemo(() => {
+    const total = cycles.length;
+    if (!total) return { total: 0, finished: 0, rate: 0 };
+    const finished = cycles.filter((c) => {
+      const cycleLogs = logs.filter((l) => {
+        if (l.cycle_id) return l.cycle_id === c.id;
+        const d = new Date(l.log_date);
+        const start = new Date(c.start_date);
+        const end = c.end_date ? new Date(c.end_date) : new Date();
+        return d >= start && d <= end;
+      });
+      const maxDay = cycleLogs.reduce(
+        (m, l) => Math.max(m, l.day_number || 0),
+        0
+      );
+      return maxDay >= 14;
+    }).length;
+    return { total, finished, rate: Math.round((finished / total) * 100) };
+  }, [cycles, logs]);
+
+  const inviteByCycleNumber = useMemo(() => {
+    const rows = {};
+    for (const inv of invitations) {
+      if (inv.result !== 'success' && inv.result !== 'failure') continue;
+      const parentCycles = cycles.filter(
+        (c) => c.device_id === inv.parent_device_id
+      );
+      const invDate = new Date(inv.invitation_date);
+      const cycle = parentCycles.find((c) => {
+        const start = new Date(c.start_date);
+        const end = c.end_date ? new Date(c.end_date) : new Date();
+        return invDate >= start && invDate <= end;
+      });
+      const key = cycle ? cycle.cycle_number : 0;
+      if (!rows[key]) rows[key] = { cycleNumber: key, total: 0, success: 0 };
+      rows[key].total += 1;
+      if (inv.result === 'success') rows[key].success += 1;
+    }
+    return Object.values(rows)
+      .sort((a, b) => a.cycleNumber - b.cycleNumber)
+      .map((r) => ({
+        ...r,
+        rate: r.total ? Math.round((r.success / r.total) * 100) : 0,
+      }));
+  }, [invitations, cycles]);
+
   return (
     <div className="page stats">
       <h1 className="page-title">統計・分析</h1>
@@ -115,6 +164,13 @@ export default function Stats() {
               <div className="stat-label">招待成功率</div>
               <div className="stat-num">{inviteStats.rate}<span className="pct">%</span></div>
               <div className="stat-sub">成功 {inviteStats.success} / 失敗 {inviteStats.failure} / 保留 {inviteStats.pending}</div>
+            </div>
+            <div className="stat-box">
+              <div className="stat-label">平均完走率</div>
+              <div className="stat-num">{cycleCompletion.rate}<span className="pct">%</span></div>
+              <div className="stat-sub">
+                完走 {cycleCompletion.finished} / 全{cycleCompletion.total}サイクル
+              </div>
             </div>
           </div>
 
@@ -148,6 +204,34 @@ export default function Stats() {
               ⭐ <strong>{bucketAnalysis.best.label}</strong> が最も成功しやすい帯です（{bucketAnalysis.best.rate}%）
             </div>
           )}
+
+          <h2 className="section-title">サイクル別 招待成功率</h2>
+          <p className="hint">親端末がそのサイクル中に出した招待の成功率</p>
+          <table className="bucket-table">
+            <thead>
+              <tr>
+                <th>サイクル</th>
+                <th>件数</th>
+                <th>成功</th>
+                <th>成功率</th>
+              </tr>
+            </thead>
+            <tbody>
+              {inviteByCycleNumber.length === 0 && (
+                <tr>
+                  <td colSpan="4" className="empty-row">データなし</td>
+                </tr>
+              )}
+              {inviteByCycleNumber.map((r) => (
+                <tr key={r.cycleNumber}>
+                  <td>{r.cycleNumber > 0 ? `第${r.cycleNumber}サイクル` : '未紐付'}</td>
+                  <td>{r.total}</td>
+                  <td>{r.success}</td>
+                  <td>{r.rate}%</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </>
       )}
     </div>

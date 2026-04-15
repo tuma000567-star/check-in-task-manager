@@ -18,13 +18,18 @@ function videoStateClass(minutes) {
   return 'partial';
 }
 
-export default function DeviceCard({ device, logs, task, onChange }) {
+export default function DeviceCard({ device, logs, task, currentCycle, onChange }) {
   const [saving, setSaving] = useState(false);
   const [localTask, setLocalTask] = useState(task || {});
   const [videoMinutes, setVideoMinutes] = useState(
     task?.video_minutes != null ? String(task.video_minutes) : ''
   );
-  const currentDay = useMemo(() => calculateCurrentDay(device, logs), [device, logs]);
+  const cycleStartDate = currentCycle?.start_date || null;
+  const cycleNumber = currentCycle?.cycle_number || 1;
+  const currentDay = useMemo(
+    () => calculateCurrentDay(device, logs, cycleStartDate),
+    [device, logs, cycleStartDate]
+  );
   const todayLog = getTodayLog(device, logs);
 
   useEffect(() => {
@@ -91,18 +96,22 @@ export default function DeviceCard({ device, logs, task, onChange }) {
     setSaving(true);
     try {
       if (todayLog) {
+        const updatePayload = { status, day_number: currentDay };
+        if (currentCycle?.id) updatePayload.cycle_id = currentCycle.id;
         const { error } = await supabase
           .from('checkin_logs')
-          .update({ status, day_number: currentDay })
+          .update(updatePayload)
           .eq('id', todayLog.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from('checkin_logs').insert({
+        const insertPayload = {
           device_id: device.id,
           log_date: todayIso(),
           status,
           day_number: currentDay,
-        });
+        };
+        if (currentCycle?.id) insertPayload.cycle_id = currentCycle.id;
+        const { error } = await supabase.from('checkin_logs').insert(insertPayload);
         if (error) throw error;
       }
       onChange && onChange();
@@ -118,7 +127,10 @@ export default function DeviceCard({ device, logs, task, onChange }) {
   return (
     <div className="device-card">
       <div className="card-top">
-        <div className="card-name">{device.name}</div>
+        <div className="card-name-wrap">
+          <div className="card-name">{device.name}</div>
+          <div className="cycle-badge">第{cycleNumber}サイクル</div>
+        </div>
         <Link to={`/device/${device.id}`} className="detail-link">詳細 ›</Link>
       </div>
 

@@ -66,17 +66,36 @@ export default function AddDeviceModal({ devices, onClose, onSaved }) {
     }
     setSaving(true);
     try {
-      const { error } = await supabase.from('devices').insert({
-        name: name.trim(),
-        birth_method: birthMethod.trim(),
-        parent_id: parentId ? parentId : null,
-        birth_date: birthDate,
-        checkin_start_date: checkinStartDate,
-        current_checkin_day: currentDay,
-        is_active: true,
-        notes: notes.trim() || null,
-      });
+      const { data: inserted, error } = await supabase
+        .from('devices')
+        .insert({
+          name: name.trim(),
+          birth_method: birthMethod.trim(),
+          parent_id: parentId ? parentId : null,
+          birth_date: birthDate,
+          checkin_start_date: checkinStartDate,
+          current_checkin_day: currentDay,
+          is_active: true,
+          notes: notes.trim() || null,
+        })
+        .select()
+        .single();
       if (error) throw error;
+
+      if (inserted?.id) {
+        const { error: cycleErr } = await supabase
+          .from('checkin_cycles')
+          .insert({
+            device_id: inserted.id,
+            cycle_number: 1,
+            start_date: checkinStartDate,
+            completed: false,
+          });
+        if (cycleErr && !/does not exist|relation/i.test(cycleErr.message)) {
+          throw cycleErr;
+        }
+      }
+
       onSaved && onSaved();
     } catch (err) {
       alert('保存失敗: ' + err.message);

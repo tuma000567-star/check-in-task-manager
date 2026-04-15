@@ -2,14 +2,17 @@ import { toDateOnly, daysBetween, todayIso } from './dates.js';
 
 export const MAX_CHECKIN_DAYS = 14;
 
-export function calculateCurrentDay(device, logs) {
-  const deviceLogs = logs
-    .filter((l) => l.device_id === device.id)
-    .sort((a, b) => new Date(a.log_date) - new Date(b.log_date));
-
+export function calculateCurrentDay(device, logs, cycleStartDate = null) {
+  const baseStart = cycleStartDate || device.checkin_start_date;
+  const cycleStart = toDateOnly(baseStart);
   const today = toDateOnly(new Date());
 
-  let startDate = toDateOnly(device.checkin_start_date);
+  const deviceLogs = logs
+    .filter((l) => l.device_id === device.id)
+    .filter((l) => toDateOnly(l.log_date) >= cycleStart)
+    .sort((a, b) => new Date(a.log_date) - new Date(b.log_date));
+
+  let startDate = cycleStart;
   for (const log of deviceLogs) {
     if (log.status === 'error') {
       const next = toDateOnly(log.log_date);
@@ -35,13 +38,16 @@ export function getTodayLog(device, logs) {
   ) || null;
 }
 
-export function buildCalendar(device, logs) {
-  const currentDay = calculateCurrentDay(device, logs);
+export function buildCalendar(device, logs, cycleStartDate = null) {
+  const baseStart = cycleStartDate || device.checkin_start_date;
+  const currentDay = calculateCurrentDay(device, logs, baseStart);
+  const cycleFloor = toDateOnly(baseStart);
   const deviceLogs = logs
     .filter((l) => l.device_id === device.id)
+    .filter((l) => toDateOnly(l.log_date) >= cycleFloor)
     .sort((a, b) => new Date(b.log_date) - new Date(a.log_date));
 
-  let cycleStart = toDateOnly(device.checkin_start_date);
+  let cycleStart = cycleFloor;
   for (const log of [...deviceLogs].reverse()) {
     if (log.status === 'error') {
       const next = toDateOnly(log.log_date);

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase.js';
 import { buildCalendar, calculateCurrentDay } from '../utils/checkin.js';
-import { daysBetween, formatDateJa } from '../utils/dates.js';
+import { daysBetween, formatDateJa, todayIso } from '../utils/dates.js';
 import AddInvitationModal from '../components/AddInvitationModal.jsx';
 
 export default function DeviceDetail() {
@@ -11,8 +11,10 @@ export default function DeviceDetail() {
   const [logs, setLogs] = useState([]);
   const [invitations, setInvitations] = useState([]);
   const [allDevices, setAllDevices] = useState([]);
+  const [cycles, setCycles] = useState([]);
   const [tab, setTab] = useState('checkin');
   const [showInvite, setShowInvite] = useState(false);
+  const [restarting, setRestarting] = useState(false);
   const [error, setError] = useState(null);
 
   async function load() {
@@ -29,6 +31,13 @@ export default function DeviceDetail() {
       setLogs(logRes.data || []);
       setInvitations(invRes.data || []);
       setAllDevices(allRes.data || []);
+
+      const cycleRes = await supabase
+        .from('checkin_cycles')
+        .select('*')
+        .eq('device_id', id)
+        .order('cycle_number');
+      if (!cycleRes.error) setCycles(cycleRes.data || []);
     } catch (e) {
       setError(e.message || String(e));
     }
@@ -38,6 +47,15 @@ export default function DeviceDetail() {
     load();
   }, [id]);
 
+  const currentCycle = useMemo(() => {
+    if (!cycles.length) return null;
+    const active = cycles.find((c) => !c.completed);
+    if (active) return active;
+    return [...cycles].sort((a, b) => b.cycle_number - a.cycle_number)[0];
+  }, [cycles]);
+
+  const cycleStartDate = currentCycle?.start_date || null;
+
   const daysSinceBirth = useMemo(() => {
     if (!device) return 0;
     return daysBetween(device.birth_date, new Date()) + 1;
@@ -45,13 +63,13 @@ export default function DeviceDetail() {
 
   const calendar = useMemo(() => {
     if (!device) return { cells: [], currentDay: 1 };
-    return buildCalendar(device, logs);
-  }, [device, logs]);
+    return buildCalendar(device, logs, cycleStartDate);
+  }, [device, logs, cycleStartDate]);
 
   const currentDay = useMemo(() => {
     if (!device) return 1;
-    return calculateCurrentDay(device, logs);
-  }, [device, logs]);
+    return calculateCurrentDay(device, logs, cycleStartDate);
+  }, [device, logs, cycleStartDate]);
 
   const inviteStats = useMemo(() => {
     const total = invitations.length;
@@ -59,6 +77,76 @@ export default function DeviceDetail() {
     const rate = total ? Math.round((success / total) * 100) : 0;
     return { total, success, rate };
   }, [invitations]);
+
+  const cycleRows = useMemo(() => {
+    return [...cycles]
+      .sort((a, b) => b.cycle_number - a.cycle_number)
+      .map((c) => {
+        const cycleLogs = logs.filter((l) => {
+          if (l.cycle_id) return l.cycle_id === c.id;
+          const d = new Date(l.log_date);
+          const start = new Date(c.start_date);
+          const end = c.end_date ? new Date(c.end_date) : new Date();
+          return d >= start && d <= end;
+        });
+        const success = cycleLogs.filter((l) => l.status === 'success').length;
+        const rate = cycleLogs.length
+          ? Math.round((success / cycleLogs.length) * 100)
+          : 0;
+        const maxDay = cycleLogs.reduce(
+          (m, l) => Math.max(m, l.day_number || 0),
+          0
+        );
+        const finished = maxDay >= 14;
+        return {
+          ...c,
+          logCount: cycleLogs.length,
+          successCount: success,
+          rate,
+          maxDay,
+          finished,
+        };
+      });
+  }, [cycles, logs]);
+
+  async function handleRestart() {
+    if (!supabase || restarting) return;
+    if (
+      !confirm(
+        '新しいサイクルを開始しますか？現在のサイクルを完了にして1日目からリセットします'
+      )
+    )
+      return;
+    setRestarting(true);
+    const today = todayIso();
+    try {
+      if (currentCycle) {
+        const { error: upErr } = await supabase
+          .from('checkin_cycles')
+          .update({ end_date: today, completed: true })
+          .eq('id', currentCycle.id);
+        if (upErr) throw upErr;
+      }
+      const nextNumber = (currentCycle?.cycle_number || 0) + 1;
+      const { error: insErr } = await supabase.from('checkin_cycles').insert({
+        device_id: id,
+        cycle_number: nextNumber,
+        start_date: today,
+        completed: false,
+      });
+      if (insErr) throw insErr;
+      const { error: devErr } = await supabase
+        .from('devices')
+        .update({ checkin_start_date: today, current_checkin_day: 1 })
+        .eq('id', id);
+      if (devErr) throw devErr;
+      await load();
+    } catch (e) {
+      alert('再スタート失敗: ' + e.message);
+    } finally {
+      setRestarting(false);
+    }
+  }
 
   if (!device) {
     return (
@@ -72,7 +160,12 @@ export default function DeviceDetail() {
   return (
     <div className="page detail">
       <Link to="/" className="back">← 戻る</Link>
-      <h1 className="detail-name">{device.name}</h1>
+      <div className="detail-header">
+        <h1 className="detail-name">{device.name}</h1>
+        {currentCycle && (
+          <div className="cycle-badge current">第{currentCycle.cycle_number}サイクル</div>
+        )}
+      </div>
 
       <div className="info-grid">
         <div className="info-item">
@@ -85,24 +178,43 @@ export default function DeviceDetail() {
         </div>
         <div className="info-item full">
           <div className="info-label">誕生からの経過</div>
-          <div className="info-val big-days">{daysSinceBirth}<span>日目</span></div>
+          <div className="info-val big-days">
+            {daysSinceBirth}<span>日目</span>
+          </div>
         </div>
         <div className="info-item">
           <div className="info-label">現在</div>
           <div className="info-val">Day {currentDay}</div>
         </div>
+        <div className="info-item">
+          <div className="info-label">サイクル開始</div>
+          <div className="info-val">
+            {currentCycle ? formatDateJa(currentCycle.start_date) : '-'}
+          </div>
+        </div>
       </div>
+
+      <button
+        className="btn restart full"
+        onClick={handleRestart}
+        disabled={restarting}
+      >
+        🔄 {restarting ? '処理中...' : '再スタート'}
+      </button>
 
       <div className="tabs">
         <button className={tab === 'checkin' ? 'active' : ''} onClick={() => setTab('checkin')}>
           チェックイン
+        </button>
+        <button className={tab === 'cycles' ? 'active' : ''} onClick={() => setTab('cycles')}>
+          サイクル履歴
         </button>
         <button className={tab === 'invite' ? 'active' : ''} onClick={() => setTab('invite')}>
           招待履歴
         </button>
       </div>
 
-      {tab === 'checkin' ? (
+      {tab === 'checkin' && (
         <>
           <section>
             <h3 className="section-title">カレンダー（現在のサイクル）</h3>
@@ -142,7 +254,42 @@ export default function DeviceDetail() {
             </ul>
           </section>
         </>
-      ) : (
+      )}
+
+      {tab === 'cycles' && (
+        <section>
+          <h3 className="section-title">サイクル履歴</h3>
+          <ul className="cycle-list">
+            {cycleRows.length === 0 && (
+              <li className="empty-row">サイクル情報がありません</li>
+            )}
+            {cycleRows.map((c) => (
+              <li
+                key={c.id}
+                className={'cycle-row ' + (c.completed ? 'done' : 'active')}
+              >
+                <div className="cycle-row-head">
+                  <strong>第{c.cycle_number}サイクル</strong>
+                  <span className={'cycle-status ' + (c.finished ? 'finished' : c.completed ? 'incomplete' : 'in-progress')}>
+                    {c.finished ? '完走' : c.completed ? '未完走' : '進行中'}
+                  </span>
+                </div>
+                <div className="cycle-row-body">
+                  <span>
+                    {formatDateJa(c.start_date)} 〜 {c.end_date ? formatDateJa(c.end_date) : '進行中'}
+                  </span>
+                  <span>到達 Day {c.maxDay || 0}</span>
+                  <span>
+                    成功 {c.successCount}/{c.logCount}（{c.rate}%）
+                  </span>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {tab === 'invite' && (
         <>
           <div className="invite-head">
             <div className="invite-stat">
