@@ -1,7 +1,20 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(gh repo:*)",
+      "Bash(vercel link:*)",
+      "Bash(vercel deploy:*)",
+      "Bash(export SBP_TOKEN=\"sbp_b531573adef473e55ce8a1c905ba46dfafc29453\")",
+      "Bash(curl -s -H 'Authorization: Bearer sbp_b531573adef473e55ce8a1c905ba46dfafc29453' https://api.supabase.com/v1/organizations)",
+      "Bash(curl -s -X POST -H 'Authorization: Bearer sbp_b531573adef473e55ce8a1c905ba46dfafc29453' -H 'Content-Type: application/json' -d '{\"name\":\"check-in-task-manager\",\"organization_id\":\"riyiyaazndycdolfvzdm\",\"plan\":\"free\",\"region\":\"ap-northeast-1\",\"db_pass\":\"Checkin2024!\"}' https://api.supabase.com/v1/projects)",
+      "Bash(node -e \"const fs=require\\('fs'\\);const sql=fs.readFileSync\\('supabase/schema.sql','utf8'\\);process.stdout.write\\(JSON.stringify\\({query:sql}\\)\\);\")",
+      "Bash(curl -s -X POST -H 'Authorization: Bearer __TRACKED_VAR__' -H 'Content-Type: application/json' --data-binary @/tmp/query.json https://api.supabase.com/v1/projects/etlcdeshhpbdggugqznt/database/query)",
+      "Bash(curl -s -X POST -H 'Authorization: Bearer sbp_b531573adef473e55ce8a1c905ba46dfafc29453' -H 'Content-Type: application/json' -d '{\"query\":\"select table_name from information_schema.tables where table_schema='\\\\''public'\\\\'' order by table_name;\"}' https://api.supabase.com/v1/projects/etlcdeshhpbdggugqznt/database/query)",
+      "Bash(curl -s -H 'Authorization: Bearer sbp_b531573adef473e55ce8a1c905ba46dfafc29453' 'https://api.supabase.com/v1/projects/etlcdeshhpbdggugqznt/api-keys?reveal=true')",
+      "Bash(vercel env:*)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" https://check-in-task-manager.vercel.app)",
+      "Bash(curl -s -H \"apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0bGNkZXNoaHBiZGdndWdxem50Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxODc0OTMsImV4cCI6MjA5MTc2MzQ5M30.jYmCTIKJjZaP7wEx2KeVq2tMboRzeQ734qpGQtZ2c-0\" \"https://etlcdeshhpbdggugqznt.supabase.co/rest/v1/devices?select=*&limit=1\")"
     ]
   }
 }
