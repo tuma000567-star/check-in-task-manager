@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '../lib/supabase.js';
 import { todayIso, formatDateJa } from '../utils/dates.js';
 import { getCurrentCycleForDate } from '../utils/cycles.js';
+import { useInterval } from '../hooks/useInterval.js';
 import DeviceCard from '../components/DeviceCard.jsx';
 import AddDeviceModal from '../components/AddDeviceModal.jsx';
 
@@ -14,6 +15,33 @@ const SORT_OPTIONS = [
 
 const SORT_STORAGE_KEY = 'home-sort-mode';
 const SCROLL_STORAGE_KEY = 'home-scroll-y';
+const AUTO_REFRESH_MS = 30 * 1000;
+
+function shallowListEqual(a, b) {
+  if (a === b) return true;
+  if (!Array.isArray(a) || !Array.isArray(b)) return false;
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    const x = a[i];
+    const y = b[i];
+    if (x === y) continue;
+    if (!x || !y) return false;
+    if (x.id !== y.id) return false;
+    const keys = new Set([...Object.keys(x), ...Object.keys(y)]);
+    for (const k of keys) {
+      if (x[k] !== y[k]) return false;
+    }
+  }
+  return true;
+}
+
+function formatClock(date) {
+  if (!date) return '--:--:--';
+  const h = String(date.getHours()).padStart(2, '0');
+  const m = String(date.getMinutes()).padStart(2, '0');
+  const s = String(date.getSeconds()).padStart(2, '0');
+  return `${h}:${m}:${s}`;
+}
 
 export default function Home() {
   const [devices, setDevices] = useState([]);
@@ -28,7 +56,12 @@ export default function Home() {
     if (typeof window === 'undefined') return 'default';
     return window.localStorage.getItem(SORT_STORAGE_KEY) || 'default';
   });
+  const [lastUpdated, setLastUpdated] = useState(null);
+  const [tabVisible, setTabVisible] = useState(
+    typeof document === 'undefined' ? true : document.visibilityState !== 'hidden'
+  );
   const restoredRef = useRef(false);
+  const bgRefreshingRef = useRef(false);
 
   const today = todayIso();
 
@@ -57,6 +90,7 @@ export default function Home() {
         .select('*')
         .order('cycle_number');
       if (!cycleRes.error) setCycles(cycleRes.data || []);
+      setLastUpdated(new Date());
     } catch (e) {
       setError(e.message || String(e));
     } finally {
@@ -64,9 +98,67 @@ export default function Home() {
     }
   }
 
+  const silentRefresh = useCallback(async () => {
+    if (!supabase) return;
+    if (bgRefreshingRef.current) return;
+    bgRefreshingRef.current = true;
+    try {
+      const [devRes, logRes, taskRes, cycleRes] = await Promise.all([
+        supabase.from('devices').select('*').eq('is_active', true).order('created_at'),
+        supabase.from('checkin_logs').select('*').order('log_date'),
+        supabase.from('daily_tasks').select('*').eq('task_date', today),
+        supabase.from('checkin_cycles').select('*').order('cycle_number'),
+      ]);
+      if (devRes.error || logRes.error || taskRes.error) return;
+      setDevices((prev) => {
+        const next = devRes.data || [];
+        return shallowListEqual(prev, next) ? prev : next;
+      });
+      setLogs((prev) => {
+        const next = logRes.data || [];
+        return shallowListEqual(prev, next) ? prev : next;
+      });
+      setTasks((prev) => {
+        const next = taskRes.data || [];
+        return shallowListEqual(prev, next) ? prev : next;
+      });
+      if (!cycleRes.error) {
+        setCycles((prev) => {
+          const next = cycleRes.data || [];
+          return shallowListEqual(prev, next) ? prev : next;
+        });
+      }
+      setLastUpdated(new Date());
+    } catch (e) {
+      console.warn('Silent refresh failed:', e);
+    } finally {
+      bgRefreshingRef.current = false;
+    }
+  }, [today]);
+
   useEffect(() => {
     loadAll();
   }, []);
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const handleVisibility = () => {
+      const visible = document.visibilityState !== 'hidden';
+      setTabVisible(visible);
+      if (visible) {
+        silentRefresh();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
+  }, [silentRefresh]);
+
+  useInterval(
+    () => {
+      if (!loading) silentRefresh();
+    },
+    tabVisible ? AUTO_REFRESH_MS : null
+  );
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -194,6 +286,11 @@ export default function Home() {
       <header className="home-header">
         <div className="date-big">{formatDateJa(new Date())}</div>
         <div className="subtitle">チェックイン管理</div>
+        <div className="last-updated" aria-live="polite">
+          <span className={'sync-dot ' + (tabVisible ? 'live' : 'paused')} />
+          最終更新: {formatClock(lastUpdated)}
+          {!tabVisible && ' (一時停止)'}
+        </div>
       </header>
 
       {error && <div className="error-box">エラー: {error}</div>}

@@ -73,6 +73,32 @@ html, body {
   letter-spacing: 0.15em;
   text-transform: uppercase;
 }
+.last-updated {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  color: var(--fg-dim);
+  margin-top: 6px;
+  font-variant-numeric: tabular-nums;
+}
+.sync-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--success);
+  box-shadow: 0 0 6px rgba(34, 197, 94, 0.8);
+  animation: pulse 2s infinite;
+}
+.sync-dot.paused {
+  background: var(--fg-dim);
+  box-shadow: none;
+  animation: none;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
 
 /* ホーム統計 */
 .home-stats {
