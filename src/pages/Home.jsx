@@ -1,9 +1,19 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '../lib/supabase.js';
 import { todayIso, formatDateJa } from '../utils/dates.js';
 import { getCurrentCycleForDate } from '../utils/cycles.js';
 import DeviceCard from '../components/DeviceCard.jsx';
 import AddDeviceModal from '../components/AddDeviceModal.jsx';
+
+const SORT_OPTIONS = [
+  { value: 'default', label: 'デフォルト（登録順）' },
+  { value: 'error-first', label: '❌ エラー優先' },
+  { value: 'unchecked-first', label: '⚠️ 未チェック優先' },
+  { value: 'success-last', label: '✅ 成功済を下に' },
+];
+
+const SORT_STORAGE_KEY = 'home-sort-mode';
+const SCROLL_STORAGE_KEY = 'home-scroll-y';
 
 export default function Home() {
   const [devices, setDevices] = useState([]);
@@ -14,6 +24,11 @@ export default function Home() {
   const [showAdd, setShowAdd] = useState(false);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [sortMode, setSortMode] = useState(() => {
+    if (typeof window === 'undefined') return 'default';
+    return window.localStorage.getItem(SORT_STORAGE_KEY) || 'default';
+  });
+  const restoredRef = useRef(false);
 
   const today = todayIso();
 
@@ -51,6 +66,47 @@ export default function Home() {
 
   useEffect(() => {
     loadAll();
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem(SORT_STORAGE_KEY, sortMode);
+  }, [sortMode]);
+
+  useEffect(() => {
+    if (restoredRef.current) return;
+    if (loading) return;
+    if (devices.length === 0) {
+      restoredRef.current = true;
+      return;
+    }
+    const saved = window.sessionStorage.getItem(SCROLL_STORAGE_KEY);
+    if (saved) {
+      const y = parseInt(saved, 10);
+      if (!Number.isNaN(y) && y > 0) {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            window.scrollTo(0, y);
+          });
+        });
+      }
+    }
+    restoredRef.current = true;
+  }, [loading, devices.length]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const saveScroll = () => {
+      window.sessionStorage.setItem(
+        SCROLL_STORAGE_KEY,
+        String(window.scrollY || window.pageYOffset || 0)
+      );
+    };
+    window.addEventListener('beforeunload', saveScroll);
+    return () => {
+      saveScroll();
+      window.removeEventListener('beforeunload', saveScroll);
+    };
   }, []);
 
   const taskByDevice = useMemo(() => {
@@ -101,6 +157,38 @@ export default function Home() {
     });
   }, [devices, searchQuery]);
 
+  const sortedDevices = useMemo(() => {
+    const arr = [...filteredDevices];
+    if (sortMode === 'default') return arr;
+
+    const statusOf = (deviceId) => {
+      const log = logs.find(
+        (l) => l.device_id === deviceId && l.log_date === today
+      );
+      return log?.status || 'pending';
+    };
+
+    const rankFn = (() => {
+      if (sortMode === 'error-first') {
+        return (d) => (statusOf(d.id) === 'error' ? 0 : 1);
+      }
+      if (sortMode === 'unchecked-first') {
+        return (d) => (statusOf(d.id) === 'pending' ? 0 : 1);
+      }
+      if (sortMode === 'success-last') {
+        return (d) => (statusOf(d.id) === 'success' ? 1 : 0);
+      }
+      return () => 0;
+    })();
+
+    const indexMap = new Map(arr.map((d, i) => [d.id, i]));
+    return arr.sort((a, b) => {
+      const diff = rankFn(a) - rankFn(b);
+      if (diff !== 0) return diff;
+      return indexMap.get(a.id) - indexMap.get(b.id);
+    });
+  }, [filteredDevices, sortMode, logs, today]);
+
   return (
     <div className="page home">
       <header className="home-header">
@@ -133,29 +221,44 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="search-bar">
-            <span className="search-icon">🔍</span>
-            <input
-              type="search"
-              placeholder="端末名・メモで検索"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            {searchQuery && (
-              <button
-                type="button"
-                className="search-clear"
-                onClick={() => setSearchQuery('')}
-                aria-label="クリア"
-              >
-                ×
-              </button>
-            )}
+          <div className="search-sort-row">
+            <div className="search-bar">
+              <span className="search-icon">🔍</span>
+              <input
+                type="search"
+                placeholder="端末名・メモで検索"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  className="search-clear"
+                  onClick={() => setSearchQuery('')}
+                  aria-label="クリア"
+                >
+                  ×
+                </button>
+              )}
+            </div>
+            <select
+              className="sort-select"
+              value={sortMode}
+              onChange={(e) => setSortMode(e.target.value)}
+              aria-label="並び替え"
+            >
+              {SORT_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
           </div>
 
-          {searchQuery && (
+          {(searchQuery || sortMode !== 'default') && (
             <div className="search-result">
-              {filteredDevices.length} 件ヒット
+              {filteredDevices.length} 件 /{' '}
+              {SORT_OPTIONS.find((o) => o.value === sortMode)?.label}
             </div>
           )}
         </>
@@ -168,14 +271,14 @@ export default function Home() {
           <p>端末がまだありません</p>
           <p className="hint">右下の「＋」から追加してください</p>
         </div>
-      ) : filteredDevices.length === 0 ? (
+      ) : sortedDevices.length === 0 ? (
         <div className="empty">
           <p>該当する端末がありません</p>
           <p className="hint">検索条件を変えてみてください</p>
         </div>
       ) : (
         <div className="device-list">
-          {filteredDevices.map((d) => (
+          {sortedDevices.map((d) => (
             <DeviceCard
               key={d.id}
               device={d}
