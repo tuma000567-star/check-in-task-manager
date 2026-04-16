@@ -6,14 +6,13 @@ import { useInterval } from '../hooks/useInterval.js';
 import DeviceCard from '../components/DeviceCard.jsx';
 import AddDeviceModal from '../components/AddDeviceModal.jsx';
 
-const SORT_OPTIONS = [
-  { value: 'default', label: 'デフォルト（登録順）' },
-  { value: 'error-first', label: '❌ エラー優先' },
-  { value: 'unchecked-first', label: '⚠️ 未チェック優先' },
-  { value: 'success-last', label: '✅ 成功済を下に' },
-];
+const FILTER_MODES = {
+  all: { label: '全て', short: '全て' },
+  success: { label: '本日成功のみ', short: '本日成功' },
+  error: { label: 'エラーのみ', short: 'エラー' },
+  pending: { label: '未チェックのみ', short: '未チェック' },
+};
 
-const SORT_STORAGE_KEY = 'home-sort-mode';
 const SCROLL_STORAGE_KEY = 'home-scroll-y';
 const AUTO_REFRESH_MS = 30 * 1000;
 
@@ -52,10 +51,7 @@ export default function Home() {
   const [showAdd, setShowAdd] = useState(false);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [sortMode, setSortMode] = useState(() => {
-    if (typeof window === 'undefined') return 'default';
-    return window.localStorage.getItem(SORT_STORAGE_KEY) || 'default';
-  });
+  const [filterMode, setFilterMode] = useState('all');
   const [lastUpdated, setLastUpdated] = useState(null);
   const [tabVisible, setTabVisible] = useState(
     typeof document === 'undefined' ? true : document.visibilityState !== 'hidden'
@@ -161,11 +157,6 @@ export default function Home() {
   );
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    window.localStorage.setItem(SORT_STORAGE_KEY, sortMode);
-  }, [sortMode]);
-
-  useEffect(() => {
     if (restoredRef.current) return;
     if (loading) return;
     if (devices.length === 0) {
@@ -237,49 +228,31 @@ export default function Home() {
     return { total, successCount, errorCount, pendingCount, rate };
   }, [devices, logs, today]);
 
-  const filteredDevices = useMemo(() => {
+  const statusByDevice = useMemo(() => {
+    const m = {};
+    for (const d of devices) {
+      const log = logs.find(
+        (l) => l.device_id === d.id && l.log_date === today
+      );
+      m[d.id] = log?.status || 'pending';
+    }
+    return m;
+  }, [devices, logs, today]);
+
+  const visibleDevices = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
-    if (!q) return devices;
     return devices.filter((d) => {
+      if (filterMode !== 'all' && statusByDevice[d.id] !== filterMode) {
+        return false;
+      }
+      if (!q) return true;
       if (d.name?.toLowerCase().includes(q)) return true;
       if (d.birth_method?.toLowerCase().includes(q)) return true;
       if (d.parent_name?.toLowerCase().includes(q)) return true;
       if (d.notes?.toLowerCase().includes(q)) return true;
       return false;
     });
-  }, [devices, searchQuery]);
-
-  const sortedDevices = useMemo(() => {
-    const arr = [...filteredDevices];
-    if (sortMode === 'default') return arr;
-
-    const statusOf = (deviceId) => {
-      const log = logs.find(
-        (l) => l.device_id === deviceId && l.log_date === today
-      );
-      return log?.status || 'pending';
-    };
-
-    const rankFn = (() => {
-      if (sortMode === 'error-first') {
-        return (d) => (statusOf(d.id) === 'error' ? 0 : 1);
-      }
-      if (sortMode === 'unchecked-first') {
-        return (d) => (statusOf(d.id) === 'pending' ? 0 : 1);
-      }
-      if (sortMode === 'success-last') {
-        return (d) => (statusOf(d.id) === 'success' ? 1 : 0);
-      }
-      return () => 0;
-    })();
-
-    const indexMap = new Map(arr.map((d, i) => [d.id, i]));
-    return arr.sort((a, b) => {
-      const diff = rankFn(a) - rankFn(b);
-      if (diff !== 0) return diff;
-      return indexMap.get(a.id) - indexMap.get(b.id);
-    });
-  }, [filteredDevices, sortMode, logs, today]);
+  }, [devices, searchQuery, filterMode, statusByDevice]);
 
   return (
     <div className="page home">
@@ -298,19 +271,39 @@ export default function Home() {
       {!loading && devices.length > 0 && (
         <>
           <div className="home-stats">
-            <div className="hstat total">
+            <button
+              type="button"
+              className={'hstat total filter-card ' + (filterMode === 'all' ? 'active' : '')}
+              onClick={() => setFilterMode('all')}
+            >
               <div className="hstat-num">{homeStats.total}</div>
               <div className="hstat-lbl">合計台数</div>
-            </div>
-            <div className="hstat success">
+            </button>
+            <button
+              type="button"
+              className={'hstat success filter-card ' + (filterMode === 'success' ? 'active' : '')}
+              onClick={() => setFilterMode('success')}
+            >
               <div className="hstat-num">{homeStats.successCount}</div>
               <div className="hstat-lbl">本日成功</div>
-            </div>
-            <div className="hstat error">
+            </button>
+            <button
+              type="button"
+              className={'hstat error filter-card ' + (filterMode === 'error' ? 'active' : '')}
+              onClick={() => setFilterMode('error')}
+            >
               <div className="hstat-num">{homeStats.errorCount}</div>
               <div className="hstat-lbl">エラー</div>
-            </div>
-            <div className="hstat rate">
+            </button>
+            <button
+              type="button"
+              className={'hstat pending filter-card ' + (filterMode === 'pending' ? 'active' : '')}
+              onClick={() => setFilterMode('pending')}
+            >
+              <div className="hstat-num">{homeStats.pendingCount}</div>
+              <div className="hstat-lbl">未チェック</div>
+            </button>
+            <div className="hstat rate readonly">
               <div className="hstat-num">
                 {homeStats.rate}<span className="hstat-pct">%</span>
               </div>
@@ -318,45 +311,41 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="search-sort-row">
-            <div className="search-bar">
-              <span className="search-icon">🔍</span>
-              <input
-                type="search"
-                placeholder="端末名・メモで検索"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              {searchQuery && (
-                <button
-                  type="button"
-                  className="search-clear"
-                  onClick={() => setSearchQuery('')}
-                  aria-label="クリア"
-                >
-                  ×
-                </button>
-              )}
-            </div>
-            <select
-              className="sort-select"
-              value={sortMode}
-              onChange={(e) => setSortMode(e.target.value)}
-              aria-label="並び替え"
-            >
-              {SORT_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
-            </select>
+          <div className="search-bar">
+            <span className="search-icon">🔍</span>
+            <input
+              type="search"
+              placeholder="端末名・メモで検索"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                className="search-clear"
+                onClick={() => setSearchQuery('')}
+                aria-label="クリア"
+              >
+                ×
+              </button>
+            )}
           </div>
 
-          {(searchQuery || sortMode !== 'default') && (
-            <div className="search-result">
-              {filteredDevices.length} 件 /{' '}
-              {SORT_OPTIONS.find((o) => o.value === sortMode)?.label}
+          {filterMode !== 'all' && (
+            <div className="filter-badge">
+              <span>{FILTER_MODES[filterMode].label}（{visibleDevices.length}件）</span>
+              <button
+                type="button"
+                className="filter-badge-clear"
+                onClick={() => setFilterMode('all')}
+                aria-label="フィルター解除"
+              >
+                ×
+              </button>
             </div>
+          )}
+          {filterMode === 'all' && searchQuery && (
+            <div className="search-result">{visibleDevices.length} 件ヒット</div>
           )}
         </>
       )}
@@ -368,14 +357,16 @@ export default function Home() {
           <p>端末がまだありません</p>
           <p className="hint">右下の「＋」から追加してください</p>
         </div>
-      ) : sortedDevices.length === 0 ? (
+      ) : visibleDevices.length === 0 ? (
         <div className="empty">
           <p>該当する端末がありません</p>
-          <p className="hint">検索条件を変えてみてください</p>
+          <p className="hint">
+            {filterMode !== 'all' ? 'フィルターを変えてみてください' : '検索条件を変えてみてください'}
+          </p>
         </div>
       ) : (
         <div className="device-list">
-          {sortedDevices.map((d) => (
+          {visibleDevices.map((d) => (
             <DeviceCard
               key={d.id}
               device={d}
