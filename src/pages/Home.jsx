@@ -52,6 +52,7 @@ export default function Home() {
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterMode, setFilterMode] = useState('all');
+  const [includeRebooted, setIncludeRebooted] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(null);
   const [tabVisible, setTabVisible] = useState(
     typeof document === 'undefined' ? true : document.visibilityState !== 'hidden'
@@ -70,7 +71,7 @@ export default function Home() {
     setError(null);
     try {
       const [devRes, logRes, taskRes] = await Promise.all([
-        supabase.from('devices').select('*').eq('is_active', true).order('created_at'),
+        supabase.from('devices').select('*').order('created_at'),
         supabase.from('checkin_logs').select('*').order('log_date'),
         supabase.from('daily_tasks').select('*').eq('task_date', today),
       ]);
@@ -100,7 +101,7 @@ export default function Home() {
     bgRefreshingRef.current = true;
     try {
       const [devRes, logRes, taskRes, cycleRes] = await Promise.all([
-        supabase.from('devices').select('*').eq('is_active', true).order('created_at'),
+        supabase.from('devices').select('*').order('created_at'),
         supabase.from('checkin_logs').select('*').order('log_date'),
         supabase.from('daily_tasks').select('*').eq('task_date', today),
         supabase.from('checkin_cycles').select('*').order('cycle_number'),
@@ -198,6 +199,11 @@ export default function Home() {
     return m;
   }, [tasks]);
 
+  const activeDevices = useMemo(
+    () => devices.filter((d) => d.is_active !== false),
+    [devices]
+  );
+
   const currentCycleByDevice = useMemo(() => {
     const byDevice = {};
     for (const c of cycles) {
@@ -212,10 +218,10 @@ export default function Home() {
   }, [cycles, devices]);
 
   const homeStats = useMemo(() => {
-    const total = devices.length;
+    const total = activeDevices.length;
     let successCount = 0;
     let errorCount = 0;
-    for (const d of devices) {
+    for (const d of activeDevices) {
       const todayLog = logs.find(
         (l) => l.device_id === d.id && l.log_date === today
       );
@@ -225,8 +231,9 @@ export default function Home() {
     }
     const pendingCount = total - successCount - errorCount;
     const rate = total ? Math.round((successCount / total) * 100) : 0;
-    return { total, successCount, errorCount, pendingCount, rate };
-  }, [devices, logs, today]);
+    const rebootedCount = devices.length - total;
+    return { total, successCount, errorCount, pendingCount, rate, rebootedCount };
+  }, [activeDevices, devices, logs, today]);
 
   const statusByDevice = useMemo(() => {
     const m = {};
@@ -242,8 +249,10 @@ export default function Home() {
   const visibleDevices = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     return devices.filter((d) => {
-      if (filterMode !== 'all' && statusByDevice[d.id] !== filterMode) {
-        return false;
+      if (!includeRebooted && d.is_active === false) return false;
+      if (filterMode !== 'all') {
+        if (d.is_active === false) return false;
+        if (statusByDevice[d.id] !== filterMode) return false;
       }
       if (!q) return true;
       if (d.name?.toLowerCase().includes(q)) return true;
@@ -252,7 +261,7 @@ export default function Home() {
       if (d.notes?.toLowerCase().includes(q)) return true;
       return false;
     });
-  }, [devices, searchQuery, filterMode, statusByDevice]);
+  }, [devices, searchQuery, filterMode, statusByDevice, includeRebooted]);
 
   return (
     <div className="page home">
@@ -330,6 +339,14 @@ export default function Home() {
               </button>
             )}
           </div>
+          <label className="reboot-toggle">
+            <input
+              type="checkbox"
+              checked={includeRebooted}
+              onChange={(e) => setIncludeRebooted(e.target.checked)}
+            />
+            <span>リブート済みを含む{homeStats.rebootedCount > 0 ? `（${homeStats.rebootedCount}台）` : ''}</span>
+          </label>
 
           {filterMode !== 'all' && (
             <div className="filter-badge">

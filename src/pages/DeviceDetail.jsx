@@ -23,6 +23,7 @@ export default function DeviceDetail() {
   const [showEdit, setShowEdit] = useState(false);
   const [restarting, setRestarting] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [rebooting, setRebooting] = useState(false);
   const [editingLogId, setEditingLogId] = useState(null);
   const [togglingLog, setTogglingLog] = useState(false);
   const [error, setError] = useState(null);
@@ -132,6 +133,28 @@ export default function DeviceDetail() {
     }
   }
 
+  async function handleReboot() {
+    if (!supabase || rebooting) return;
+    if (!confirm(`${device.name} をリブートしますか？チェックイン記録はリセットされ、ホームから非表示になります。`)) return;
+    if (!confirm('本当にリブートしますか？再登録するまで表示されません。')) return;
+    setRebooting(true);
+    try {
+      const { error: upErr } = await supabase
+        .from('devices')
+        .update({
+          is_active: false,
+          rebooted_at: new Date().toISOString(),
+          reboot_count: (device.reboot_count || 0) + 1,
+        })
+        .eq('id', id);
+      if (upErr) throw upErr;
+      navigate('/');
+    } catch (e) {
+      alert('リブート失敗: ' + e.message);
+      setRebooting(false);
+    }
+  }
+
   async function toggleLogStatus(log, newStatus) {
     if (!supabase || togglingLog) return;
     if (log.status === newStatus) {
@@ -211,22 +234,42 @@ export default function DeviceDetail() {
         {currentCycle && (
           <div className="cycle-badge current">第{currentCycle.cycle_number}サイクル</div>
         )}
+        {device.is_active === false && (
+          <div className="rebooted-badge large">🔄 リブート済み</div>
+        )}
       </div>
+
+      {device.is_active === false && (
+        <div className="rebooted-banner">
+          この端末はリブート済みです（累計 {device.reboot_count || 0} 回）。ホームから非表示になっています。
+          {device.rebooted_at && (
+            <div className="rebooted-at">最終リブート: {formatDateJa(device.rebooted_at)}</div>
+          )}
+        </div>
+      )}
 
       <div className="detail-actions">
         <button
           type="button"
           className="btn ghost small"
           onClick={() => setShowEdit(true)}
-          disabled={deleting}
+          disabled={deleting || rebooting}
         >
           ✏️ 編集
         </button>
         <button
           type="button"
+          className="btn warn small"
+          onClick={handleReboot}
+          disabled={deleting || rebooting || device.is_active === false}
+        >
+          🔄 {rebooting ? '処理中...' : 'リブート'}
+        </button>
+        <button
+          type="button"
           className="btn danger small"
           onClick={handleDelete}
-          disabled={deleting}
+          disabled={deleting || rebooting}
         >
           🗑 {deleting ? '削除中...' : '削除'}
         </button>

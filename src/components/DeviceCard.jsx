@@ -126,12 +126,17 @@ export default function DeviceCard({ device, logs, task, currentCycle, onChange 
 
   const videoCls = videoStateClass(videoMinutes);
 
+  const isRebooted = device.is_active === false;
+
   return (
-    <div className="device-card">
+    <div className={'device-card' + (isRebooted ? ' rebooted' : '')}>
       <div className="card-top">
         <div className="card-name-wrap">
           <div className="card-name">{device.name}</div>
-          <div className="cycle-badge">第{cycleNumber}サイクル</div>
+          <div className="badges">
+            <div className="cycle-badge">第{cycleNumber}サイクル</div>
+            {isRebooted && <div className="rebooted-badge">🔄 リブート済み</div>}
+          </div>
         </div>
         <Link to={`/device/${device.id}`} className="detail-link">詳細 ›</Link>
       </div>

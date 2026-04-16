@@ -341,6 +341,63 @@ html, body {
   font-size: 12px;
   padding: 4px 10px;
 }
+.badges {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.rebooted-badge {
+  display: inline-block;
+  font-size: 10px;
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  border-radius: 999px;
+  padding: 2px 8px;
+  letter-spacing: 0.02em;
+  width: fit-content;
+}
+.rebooted-badge.large {
+  font-size: 12px;
+  padding: 4px 10px;
+}
+.device-card.rebooted {
+  opacity: 0.6;
+  border-style: dashed;
+}
+.device-card.rebooted:hover {
+  opacity: 0.8;
+}
+.rebooted-banner {
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin: 6px 0 12px;
+  font-size: 12px;
+  color: #f59e0b;
+}
+.rebooted-at {
+  font-size: 11px;
+  margin-top: 4px;
+  opacity: 0.85;
+}
+.reboot-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--fg-dim);
+  margin-top: 6px;
+  cursor: pointer;
+  user-select: none;
+}
+.reboot-toggle input {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--cyan);
+  cursor: pointer;
+}
 .detail-link {
   color: var(--cyan);
   text-decoration: none;
@@ -537,6 +594,14 @@ html, body {
   align-items: center;
   justify-content: center;
   gap: 6px;
+}
+.btn.warn {
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.55);
+  color: #f59e0b;
+}
+.btn.warn:hover {
+  background: rgba(245, 158, 11, 0.25);
 }
 .btn.ghost {
   background: transparent;
