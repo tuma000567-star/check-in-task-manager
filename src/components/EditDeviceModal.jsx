@@ -49,6 +49,7 @@ export default function EditDeviceModal({ device, allDevices, onClose, onSaved }
   const [currentDay, setCurrentDay] = useState(
     device.current_checkin_day || currentDayFromStartDate(device.checkin_start_date || todayIso())
   );
+  const [balance, setBalance] = useState(String(device.balance || 0));
   const [notes, setNotes] = useState(device.notes || '');
   const [saving, setSaving] = useState(false);
 
@@ -83,6 +84,7 @@ export default function EditDeviceModal({ device, allDevices, onClose, onSaved }
       const parentId = matchedParent?.id || null;
       const parentName = typedParent && !matchedParent ? typedParent : null;
 
+      const balVal = parseInt(balance, 10);
       const { error } = await supabase
         .from('devices')
         .update({
@@ -93,6 +95,7 @@ export default function EditDeviceModal({ device, allDevices, onClose, onSaved }
           birth_date: birthDate,
           checkin_start_date: checkinStartDate,
           current_checkin_day: currentDay,
+          balance: Number.isNaN(balVal) ? 0 : balVal,
           notes: notes.trim() || null,
         })
         .eq('id', device.id);
@@ -202,6 +205,17 @@ export default function EditDeviceModal({ device, allDevices, onClose, onSaved }
           <span className="hint">
             開始日／日数を変更すると現在サイクルが再計算されます。
           </span>
+          <label>
+            残高（円）
+            <input
+              type="number"
+              inputMode="numeric"
+              min="0"
+              value={balance}
+              onChange={(e) => setBalance(e.target.value)}
+              placeholder="0"
+            />
+          </label>
           <label>
             メモ
             <textarea

@@ -25,6 +25,9 @@ export default function DeviceCard({ device, logs, task, currentCycle, onChange 
   const [videoMinutes, setVideoMinutes] = useState(
     task?.video_minutes != null ? String(task.video_minutes) : ''
   );
+  const [editingBalance, setEditingBalance] = useState(false);
+  const [balanceInput, setBalanceInput] = useState(String(device.balance || 0));
+  const [savingBalance, setSavingBalance] = useState(false);
   const cycleStartDate = currentCycle?.start_date || null;
   const cycleNumber = currentCycle?.cycle_number || 1;
   const currentDay = useMemo(
@@ -37,6 +40,34 @@ export default function DeviceCard({ device, logs, task, currentCycle, onChange 
     setLocalTask(task || {});
     setVideoMinutes(task?.video_minutes != null ? String(task.video_minutes) : '');
   }, [task]);
+
+  useEffect(() => {
+    if (!editingBalance) setBalanceInput(String(device.balance || 0));
+  }, [device.balance, editingBalance]);
+
+  async function saveBalance() {
+    if (!supabase || savingBalance) return;
+    const val = parseInt(balanceInput, 10);
+    const next = Number.isNaN(val) ? 0 : val;
+    if (next === (device.balance || 0)) {
+      setEditingBalance(false);
+      return;
+    }
+    setSavingBalance(true);
+    try {
+      const { error } = await supabase
+        .from('devices')
+        .update({ balance: next })
+        .eq('id', device.id);
+      if (error) throw error;
+      setEditingBalance(false);
+      onChange && onChange();
+    } catch (e) {
+      alert('残高保存失敗: ' + e.message);
+    } finally {
+      setSavingBalance(false);
+    }
+  }
 
   async function persistTask(patch) {
     if (!supabase) return;
@@ -132,7 +163,34 @@ export default function DeviceCard({ device, logs, task, currentCycle, onChange 
     <div className={'device-card' + (isRebooted ? ' rebooted' : '')}>
       <div className="card-top">
         <div className="card-name-wrap">
-          <div className="card-name">{device.name}</div>
+          <div className="card-name-row">
+            <span className="card-name">{device.name}</span>
+            {editingBalance ? (
+              <span className="balance-edit">
+                <span className="balance-yen">¥</span>
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  value={balanceInput}
+                  onChange={(e) => setBalanceInput(e.target.value)}
+                  onBlur={saveBalance}
+                  onKeyDown={(e) => { if (e.key === 'Enter') e.target.blur(); }}
+                  autoFocus
+                  disabled={savingBalance}
+                />
+                {savingBalance && <span className="bal-spinner" />}
+              </span>
+            ) : (
+              <button
+                type="button"
+                className={'balance-display ' + ((device.balance || 0) > 0 ? 'has-value' : '')}
+                onClick={() => setEditingBalance(true)}
+                title="タップで残高編集"
+              >
+                ¥{(device.balance || 0).toLocaleString()}
+              </button>
+            )}
+          </div>
           <div className="badges">
             <div className="cycle-badge">第{cycleNumber}サイクル</div>
             {isRebooted && <div className="rebooted-badge">🔄 リブート済み</div>}

@@ -232,7 +232,8 @@ export default function Home() {
     const pendingCount = total - successCount - errorCount;
     const rate = total ? Math.round((successCount / total) * 100) : 0;
     const rebootedCount = devices.length - total;
-    return { total, successCount, errorCount, pendingCount, rate, rebootedCount };
+    const totalBalance = activeDevices.reduce((s, d) => s + (d.balance || 0), 0);
+    return { total, successCount, errorCount, pendingCount, rate, rebootedCount, totalBalance };
   }, [activeDevices, devices, logs, today]);
 
   const statusByDevice = useMemo(() => {
@@ -279,6 +280,12 @@ export default function Home() {
 
       {!loading && devices.length > 0 && (
         <>
+          <div className="total-balance-card">
+            <div className="tb-label">💰 総残高</div>
+            <div className="tb-amount">¥{homeStats.totalBalance.toLocaleString()}</div>
+            <div className="tb-sub">{homeStats.total}台のアクティブ端末</div>
+          </div>
+
           <div className="home-stats">
             <button
               type="button"
