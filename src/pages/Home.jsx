@@ -280,12 +280,6 @@ export default function Home() {
 
       {!loading && devices.length > 0 && (
         <>
-          <div className="total-balance-card">
-            <div className="tb-label">💰 総残高</div>
-            <div className="tb-amount">¥{homeStats.totalBalance.toLocaleString()}</div>
-            <div className="tb-sub">{homeStats.total}台のアクティブ端末</div>
-          </div>
-
           <div className="home-stats">
             <button
               type="button"
