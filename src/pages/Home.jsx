@@ -52,6 +52,7 @@ export default function Home() {
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterMode, setFilterMode] = useState('all');
+  const [groupFilter, setGroupFilter] = useState('all');
   const [includeRebooted, setIncludeRebooted] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(null);
   const [tabVisible, setTabVisible] = useState(
@@ -247,6 +248,21 @@ export default function Home() {
     return m;
   }, [devices, logs, today]);
 
+  const groupList = useMemo(() => {
+    const counts = new Map();
+    let unassigned = 0;
+    for (const d of devices) {
+      if (d.is_active === false && !includeRebooted) continue;
+      const g = d.group_name?.trim();
+      if (g) counts.set(g, (counts.get(g) || 0) + 1);
+      else unassigned += 1;
+    }
+    const arr = Array.from(counts.entries())
+      .sort((a, b) => a[0].localeCompare(b[0], 'ja'))
+      .map(([name, count]) => ({ name, count }));
+    return { groups: arr, unassigned };
+  }, [devices, includeRebooted]);
+
   const visibleDevices = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     return devices.filter((d) => {
@@ -255,14 +271,23 @@ export default function Home() {
         if (d.is_active === false) return false;
         if (statusByDevice[d.id] !== filterMode) return false;
       }
+      if (groupFilter !== 'all') {
+        const dg = d.group_name?.trim() || null;
+        if (groupFilter === '__none__') {
+          if (dg) return false;
+        } else if (dg !== groupFilter) {
+          return false;
+        }
+      }
       if (!q) return true;
       if (d.name?.toLowerCase().includes(q)) return true;
       if (d.birth_method?.toLowerCase().includes(q)) return true;
       if (d.parent_name?.toLowerCase().includes(q)) return true;
+      if (d.group_name?.toLowerCase().includes(q)) return true;
       if (d.notes?.toLowerCase().includes(q)) return true;
       return false;
     });
-  }, [devices, searchQuery, filterMode, statusByDevice, includeRebooted]);
+  }, [devices, searchQuery, filterMode, statusByDevice, includeRebooted, groupFilter]);
 
   return (
     <div className="page home">
@@ -348,6 +373,37 @@ export default function Home() {
             />
             <span>リブート済みを含む{homeStats.rebootedCount > 0 ? `（${homeStats.rebootedCount}台）` : ''}</span>
           </label>
+
+          {(groupList.groups.length > 0 || groupList.unassigned > 0) && (
+            <div className="group-chips">
+              <button
+                type="button"
+                className={'chip ' + (groupFilter === 'all' ? 'active' : '')}
+                onClick={() => setGroupFilter('all')}
+              >
+                全て
+              </button>
+              {groupList.groups.map((g) => (
+                <button
+                  key={g.name}
+                  type="button"
+                  className={'chip ' + (groupFilter === g.name ? 'active' : '')}
+                  onClick={() => setGroupFilter(g.name)}
+                >
+                  {g.name}<span className="chip-count">{g.count}</span>
+                </button>
+              ))}
+              {groupList.unassigned > 0 && (
+                <button
+                  type="button"
+                  className={'chip none ' + (groupFilter === '__none__' ? 'active' : '')}
+                  onClick={() => setGroupFilter('__none__')}
+                >
+                  未設定<span className="chip-count">{groupList.unassigned}</span>
+                </button>
+              )}
+            </div>
+          )}
 
           {filterMode !== 'all' && (
             <div className="filter-badge">

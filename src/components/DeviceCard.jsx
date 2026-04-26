@@ -193,6 +193,9 @@ export default function DeviceCard({ device, logs, task, currentCycle, onChange 
           </div>
           <div className="badges">
             <div className="cycle-badge">第{cycleNumber}サイクル</div>
+            {device.group_name && (
+              <div className="group-badge">{device.group_name}</div>
+            )}
             {isRebooted && <div className="rebooted-badge">🔄 リブート済み</div>}
           </div>
         </div>

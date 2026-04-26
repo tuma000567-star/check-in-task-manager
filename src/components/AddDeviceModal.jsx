@@ -33,11 +33,16 @@ export default function AddDeviceModal({ devices, onClose, onSaved }) {
   const [name, setName] = useState('');
   const [birthMethod, setBirthMethod] = useState('');
   const [parentText, setParentText] = useState('');
+  const [groupName, setGroupName] = useState('');
   const [birthDate, setBirthDate] = useState(todayIso());
   const [checkinStartDate, setCheckinStartDate] = useState(todayIso());
   const [currentDay, setCurrentDay] = useState(1);
   const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);
+
+  const existingGroups = Array.from(
+    new Set((devices || []).map((d) => d?.group_name).filter(Boolean))
+  );
 
   function handleStartDateChange(v) {
     setCheckinStartDate(v);
@@ -80,6 +85,7 @@ export default function AddDeviceModal({ devices, onClose, onSaved }) {
           birth_method: birthMethod.trim(),
           parent_id: parentId,
           parent_name: parentName,
+          group_name: groupName.trim() || null,
           birth_date: birthDate,
           checkin_start_date: checkinStartDate,
           current_checkin_day: currentDay,
@@ -158,6 +164,22 @@ export default function AddDeviceModal({ devices, onClose, onSaved }) {
             <span className="hint">
               既存端末名と一致すれば自動で紐付け、新しい名前ならテキストとして保存されます。
             </span>
+          </label>
+          <label>
+            グループ
+            <input
+              type="text"
+              list="group-options"
+              value={groupName}
+              onChange={(e) => setGroupName(e.target.value)}
+              placeholder="空欄でグループ未設定"
+              autoComplete="off"
+            />
+            <datalist id="group-options">
+              {existingGroups.map((g) => (
+                <option key={g} value={g} />
+              ))}
+            </datalist>
           </label>
           <label>
             誕生日

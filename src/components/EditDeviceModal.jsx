@@ -50,8 +50,13 @@ export default function EditDeviceModal({ device, allDevices, onClose, onSaved }
     device.current_checkin_day || currentDayFromStartDate(device.checkin_start_date || todayIso())
   );
   const [balance, setBalance] = useState(String(device.balance || 0));
+  const [groupName, setGroupName] = useState(device.group_name || '');
   const [notes, setNotes] = useState(device.notes || '');
   const [saving, setSaving] = useState(false);
+
+  const existingGroups = Array.from(
+    new Set((allDevices || []).map((d) => d?.group_name).filter(Boolean))
+  );
 
   const parentCandidates = (allDevices || []).filter(
     (d) => d && d.id && d.id !== device.id && d.is_active !== false
@@ -92,6 +97,7 @@ export default function EditDeviceModal({ device, allDevices, onClose, onSaved }
           birth_method: birthMethod.trim(),
           parent_id: parentId,
           parent_name: parentName,
+          group_name: groupName.trim() || null,
           birth_date: birthDate,
           checkin_start_date: checkinStartDate,
           current_checkin_day: currentDay,
@@ -171,6 +177,22 @@ export default function EditDeviceModal({ device, allDevices, onClose, onSaved }
             <datalist id="edit-parent-device-options">
               {parentCandidates.map((d) => (
                 <option key={d.id} value={d.name} />
+              ))}
+            </datalist>
+          </label>
+          <label>
+            グループ
+            <input
+              type="text"
+              list="edit-group-options"
+              value={groupName}
+              onChange={(e) => setGroupName(e.target.value)}
+              placeholder="空欄でグループ未設定"
+              autoComplete="off"
+            />
+            <datalist id="edit-group-options">
+              {existingGroups.map((g) => (
+                <option key={g} value={g} />
               ))}
             </datalist>
           </label>

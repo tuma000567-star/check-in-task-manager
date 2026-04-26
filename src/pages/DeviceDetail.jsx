@@ -294,6 +294,10 @@ export default function DeviceDetail() {
           <div className="info-val">{formatDateJa(device.birth_date)}</div>
         </div>
         <div className="info-item">
+          <div className="info-label">グループ</div>
+          <div className="info-val">{device.group_name || '—'}</div>
+        </div>
+        <div className="info-item">
           <div className="info-label">残高</div>
           <div className={'info-val ' + ((device.balance || 0) > 0 ? 'balance-gold' : '')}>
             ¥{(device.balance || 0).toLocaleString()}
