@@ -30,7 +30,9 @@ function currentDayFromStartDate(iso) {
 }
 
 export default function AddDeviceModal({ devices, onClose, onSaved }) {
+  const [mode, setMode] = useState('single');
   const [name, setName] = useState('');
+  const [bulkNames, setBulkNames] = useState('');
   const [birthMethod, setBirthMethod] = useState('');
   const [parentText, setParentText] = useState('');
   const [groupName, setGroupName] = useState('');
@@ -39,6 +41,11 @@ export default function AddDeviceModal({ devices, onClose, onSaved }) {
   const [currentDay, setCurrentDay] = useState(1);
   const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);
+
+  const parsedBulk = bulkNames
+    .split(/\r?\n/)
+    .map((s) => s.trim())
+    .filter(Boolean);
 
   const existingGroups = Array.from(
     new Set((devices || []).map((d) => d?.group_name).filter(Boolean))
@@ -65,8 +72,16 @@ export default function AddDeviceModal({ devices, onClose, onSaved }) {
       alert('Supabase 未設定');
       return;
     }
-    if (!name.trim() || !birthMethod.trim()) {
-      alert('端末名と生まれた方法は必須です');
+    if (!birthMethod.trim()) {
+      alert('生まれた方法は必須です');
+      return;
+    }
+    if (mode === 'single' && !name.trim()) {
+      alert('端末名は必須です');
+      return;
+    }
+    if (mode === 'bulk' && parsedBulk.length === 0) {
+      alert('端末名を1つ以上入力してください（1行1端末）');
       return;
     }
     setSaving(true);
@@ -78,36 +93,46 @@ export default function AddDeviceModal({ devices, onClose, onSaved }) {
       const parentId = matchedParent?.id || null;
       const parentName = typedParent && !matchedParent ? typedParent : null;
 
+      const common = {
+        birth_method: birthMethod.trim(),
+        parent_id: parentId,
+        parent_name: parentName,
+        group_name: groupName.trim() || null,
+        birth_date: birthDate,
+        checkin_start_date: checkinStartDate,
+        current_checkin_day: currentDay,
+        is_active: true,
+        notes: notes.trim() || null,
+      };
+
+      const targets =
+        mode === 'single'
+          ? [{ ...common, name: name.trim() }]
+          : parsedBulk.map((n) => ({ ...common, name: n }));
+
       const { data: inserted, error } = await supabase
         .from('devices')
-        .insert({
-          name: name.trim(),
-          birth_method: birthMethod.trim(),
-          parent_id: parentId,
-          parent_name: parentName,
-          group_name: groupName.trim() || null,
-          birth_date: birthDate,
-          checkin_start_date: checkinStartDate,
-          current_checkin_day: currentDay,
-          is_active: true,
-          notes: notes.trim() || null,
-        })
-        .select()
-        .single();
+        .insert(targets)
+        .select();
       if (error) throw error;
 
-      if (inserted?.id) {
+      if (inserted && inserted.length > 0) {
+        const cycles = inserted.map((d) => ({
+          device_id: d.id,
+          cycle_number: 1,
+          start_date: checkinStartDate,
+          completed: false,
+        }));
         const { error: cycleErr } = await supabase
           .from('checkin_cycles')
-          .insert({
-            device_id: inserted.id,
-            cycle_number: 1,
-            start_date: checkinStartDate,
-            completed: false,
-          });
+          .insert(cycles);
         if (cycleErr && !/does not exist|relation/i.test(cycleErr.message)) {
           throw cycleErr;
         }
+      }
+
+      if (mode === 'bulk' && inserted) {
+        alert(`${inserted.length}件の端末を追加しました`);
       }
 
       onSaved && onSaved();
@@ -125,17 +150,51 @@ export default function AddDeviceModal({ devices, onClose, onSaved }) {
           <h2>端末追加</h2>
           <button className="modal-close" onClick={onClose}>×</button>
         </div>
+        <div className="mode-toggle">
+          <button
+            type="button"
+            className={mode === 'single' ? 'active' : ''}
+            onClick={() => setMode('single')}
+          >
+            1台ずつ
+          </button>
+          <button
+            type="button"
+            className={mode === 'bulk' ? 'active' : ''}
+            onClick={() => setMode('bulk')}
+          >
+            一括追加
+          </button>
+        </div>
         <form onSubmit={handleSave} className="modal-body">
-          <label>
-            端末名 *
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="例: iPhone A"
-              required
-            />
-          </label>
+          {mode === 'single' ? (
+            <label>
+              端末名 *
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="例: iPhone A"
+                required
+              />
+            </label>
+          ) : (
+            <label>
+              端末名（1行1端末） *
+              <textarea
+                value={bulkNames}
+                onChange={(e) => setBulkNames(e.target.value)}
+                placeholder={'WE2 1234\nWE2 5678\nA9012'}
+                rows={6}
+                style={{ fontFamily: 'monospace', fontVariantNumeric: 'tabular-nums' }}
+              />
+              <span className="hint">
+                {parsedBulk.length > 0
+                  ? `${parsedBulk.length}件追加します（共通設定: 下記フィールド）`
+                  : '空行は無視されます'}
+              </span>
+            </label>
+          )}
           <label>
             生まれた方法 *
             <input
@@ -221,7 +280,11 @@ export default function AddDeviceModal({ devices, onClose, onSaved }) {
             />
           </label>
           <button type="submit" className="btn primary full" disabled={saving}>
-            {saving ? '保存中...' : '保存'}
+            {saving
+              ? '保存中...'
+              : mode === 'bulk'
+              ? `${parsedBulk.length || 0}件まとめて追加`
+              : '保存'}
           </button>
         </form>
       </div>

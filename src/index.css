@@ -896,6 +896,30 @@ html, body {
   font-size: 26px;
   cursor: pointer;
 }
+.mode-toggle {
+  display: flex;
+  gap: 6px;
+  padding: 0 16px 0;
+  margin-top: -4px;
+}
+.mode-toggle button {
+  flex: 1;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--fg-dim);
+  font: inherit;
+  font-size: 13px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.mode-toggle button.active {
+  background: linear-gradient(180deg, rgba(37, 244, 238, 0.12), var(--bg-card));
+  border-color: var(--cyan);
+  color: var(--cyan);
+  font-weight: 700;
+}
 .modal-body {
   padding: 16px;
   display: flex;
