@@ -1,0 +1,662 @@
+[
+  {
+    "id": "c2a6747f-dc1f-4c2e-b7af-8ae7fa939f9a",
+    "device_id": "00a9ef15-623c-4ddf-bed9-c3aed6a274c0",
+    "cycle_number": 1,
+    "start_date": "2026-04-13",
+    "end_date": "2026-04-20",
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-20T20:13:24.874937+00:00"
+  },
+  {
+    "id": "4f13a8ac-b650-426c-af94-db91486a081c",
+    "device_id": "e3e3de82-4ab6-42c1-857e-8fac2fe07e12",
+    "cycle_number": 1,
+    "start_date": "2026-04-14",
+    "end_date": "2026-04-20",
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-24T10:51:30.481016+00:00"
+  },
+  {
+    "id": "66f45044-19f4-4408-8287-974ac065ff51",
+    "device_id": "00a9ef15-623c-4ddf-bed9-c3aed6a274c0",
+    "cycle_number": 2,
+    "start_date": "2026-04-21",
+    "end_date": "2026-04-21",
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-20T20:13:24.874937+00:00"
+  },
+  {
+    "id": "cfe5e443-a521-49ef-894a-753d617ed847",
+    "device_id": "00a9ef15-623c-4ddf-bed9-c3aed6a274c0",
+    "cycle_number": 3,
+    "start_date": "2026-04-22",
+    "end_date": null,
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-20T20:13:24.874937+00:00"
+  },
+  {
+    "id": "4b39a8c6-c4be-49e6-a589-56c88ead1cbf",
+    "device_id": "e3e3de82-4ab6-42c1-857e-8fac2fe07e12",
+    "cycle_number": 2,
+    "start_date": "2026-04-21",
+    "end_date": "2026-04-21",
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-24T10:51:30.481016+00:00"
+  },
+  {
+    "id": "38c4f322-307e-4ba6-ab19-4c72e1ea824e",
+    "device_id": "e3e3de82-4ab6-42c1-857e-8fac2fe07e12",
+    "cycle_number": 3,
+    "start_date": "2026-04-22",
+    "end_date": null,
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-24T10:51:30.481016+00:00"
+  },
+  {
+    "id": "cd87036d-1270-4875-b3d4-a5511945f2f0",
+    "device_id": "3841b4ad-b5cb-4426-9797-199a196a6455",
+    "cycle_number": 1,
+    "start_date": "2026-04-12",
+    "end_date": "2026-04-16",
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-24T10:52:06.675785+00:00"
+  },
+  {
+    "id": "2f34b74f-185e-4ce6-b37b-ea0124524861",
+    "device_id": "3841b4ad-b5cb-4426-9797-199a196a6455",
+    "cycle_number": 2,
+    "start_date": "2026-04-17",
+    "end_date": "2026-04-17",
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-24T10:52:06.675785+00:00"
+  },
+  {
+    "id": "27f0a44b-4f93-4885-b5a9-3cb99f010808",
+    "device_id": "2f7f270e-7e44-4e94-8abe-807dff00cbc9",
+    "cycle_number": 1,
+    "start_date": "2026-04-12",
+    "end_date": null,
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-15T13:50:55.751681+00:00"
+  },
+  {
+    "id": "742407d8-ee07-4185-bbc9-ff32b79028de",
+    "device_id": "94b0adb9-8a40-43b0-9285-3f1c90334b2d",
+    "cycle_number": 1,
+    "start_date": "2026-04-12",
+    "end_date": null,
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-15T13:51:33.967389+00:00"
+  },
+  {
+    "id": "1af819eb-d91e-4099-add2-9bff9088ad6e",
+    "device_id": "3841b4ad-b5cb-4426-9797-199a196a6455",
+    "cycle_number": 3,
+    "start_date": "2026-04-18",
+    "end_date": "2026-04-18",
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-24T10:52:06.675785+00:00"
+  },
+  {
+    "id": "0e5b25bf-6556-4354-a594-ebcb5ccef1cd",
+    "device_id": "3841b4ad-b5cb-4426-9797-199a196a6455",
+    "cycle_number": 4,
+    "start_date": "2026-04-19",
+    "end_date": "2026-04-19",
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-24T10:52:06.675785+00:00"
+  },
+  {
+    "id": "fdec9e5c-2a40-480a-b2de-d8deabe54dec",
+    "device_id": "3841b4ad-b5cb-4426-9797-199a196a6455",
+    "cycle_number": 5,
+    "start_date": "2026-04-20",
+    "end_date": "2026-04-20",
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-24T10:52:06.675785+00:00"
+  },
+  {
+    "id": "1c5bd866-b33f-453f-a19a-2a0376994108",
+    "device_id": "3841b4ad-b5cb-4426-9797-199a196a6455",
+    "cycle_number": 6,
+    "start_date": "2026-04-21",
+    "end_date": "2026-04-21",
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-24T10:52:06.675785+00:00"
+  },
+  {
+    "id": "baf89582-7790-4213-9e9d-89805a1219c3",
+    "device_id": "3841b4ad-b5cb-4426-9797-199a196a6455",
+    "cycle_number": 7,
+    "start_date": "2026-04-22",
+    "end_date": "2026-04-22",
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-24T10:52:06.675785+00:00"
+  },
+  {
+    "id": "97b5f220-37a1-4a1c-8ff0-df213b0b0e94",
+    "device_id": "3841b4ad-b5cb-4426-9797-199a196a6455",
+    "cycle_number": 8,
+    "start_date": "2026-04-23",
+    "end_date": null,
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-24T10:52:06.675785+00:00"
+  },
+  {
+    "id": "10473490-ab4b-44d4-af66-f1ea0a520a0f",
+    "device_id": "1dd60bf2-7c9e-4af7-93fb-83a89a67166d",
+    "cycle_number": 1,
+    "start_date": "2026-04-12",
+    "end_date": "2026-04-16",
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-24T10:54:56.900543+00:00"
+  },
+  {
+    "id": "6974c34d-8d1c-457a-86ef-82536dd51e84",
+    "device_id": "fcde700b-2174-4c56-9dcb-1a7d87d2bbf4",
+    "cycle_number": 1,
+    "start_date": "2026-04-19",
+    "end_date": "2026-04-22",
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-21T20:09:36.34657+00:00"
+  },
+  {
+    "id": "357669c9-f09c-4969-9328-d72611cf0cd7",
+    "device_id": "fcde700b-2174-4c56-9dcb-1a7d87d2bbf4",
+    "cycle_number": 2,
+    "start_date": "2026-04-23",
+    "end_date": null,
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-21T20:09:36.34657+00:00"
+  },
+  {
+    "id": "8794c156-d83e-40bc-84f5-2c9414505f2f",
+    "device_id": "1dd60bf2-7c9e-4af7-93fb-83a89a67166d",
+    "cycle_number": 2,
+    "start_date": "2026-04-17",
+    "end_date": "2026-04-17",
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-24T10:54:56.900543+00:00"
+  },
+  {
+    "id": "088812c8-27ea-428f-9012-db397d0d11a8",
+    "device_id": "1dd60bf2-7c9e-4af7-93fb-83a89a67166d",
+    "cycle_number": 3,
+    "start_date": "2026-04-18",
+    "end_date": "2026-04-18",
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-24T10:54:56.900543+00:00"
+  },
+  {
+    "id": "81b59a2d-fcc4-4e47-8c14-8f21c3dc0796",
+    "device_id": "1dd60bf2-7c9e-4af7-93fb-83a89a67166d",
+    "cycle_number": 4,
+    "start_date": "2026-04-19",
+    "end_date": "2026-04-19",
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-24T10:54:56.900543+00:00"
+  },
+  {
+    "id": "c6d1a468-34cd-43d2-bcd4-d3dd6046308c",
+    "device_id": "1dd60bf2-7c9e-4af7-93fb-83a89a67166d",
+    "cycle_number": 5,
+    "start_date": "2026-04-20",
+    "end_date": "2026-04-20",
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-24T10:54:56.900543+00:00"
+  },
+  {
+    "id": "9a32cd4b-37de-48ad-b415-559be243bb44",
+    "device_id": "1dd60bf2-7c9e-4af7-93fb-83a89a67166d",
+    "cycle_number": 6,
+    "start_date": "2026-04-21",
+    "end_date": "2026-04-21",
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-24T10:54:56.900543+00:00"
+  },
+  {
+    "id": "fd903eeb-8a81-4bff-b8cb-a5b5643c7167",
+    "device_id": "1dd60bf2-7c9e-4af7-93fb-83a89a67166d",
+    "cycle_number": 7,
+    "start_date": "2026-04-22",
+    "end_date": null,
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-24T10:54:56.900543+00:00"
+  },
+  {
+    "id": "10be3cd1-2f39-4969-adf3-374c479ea977",
+    "device_id": "e832b4f9-22b9-40b4-838e-2abb3253af4d",
+    "cycle_number": 1,
+    "start_date": "2026-04-12",
+    "end_date": "2026-04-16",
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-16T15:34:06.899121+00:00"
+  },
+  {
+    "id": "162653b5-83d7-48bb-941a-5f0e49e2587e",
+    "device_id": "e832b4f9-22b9-40b4-838e-2abb3253af4d",
+    "cycle_number": 2,
+    "start_date": "2026-04-17",
+    "end_date": "2026-04-17",
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-16T15:34:06.899121+00:00"
+  },
+  {
+    "id": "9beb570c-13f0-492c-93e7-e70ddeecfa29",
+    "device_id": "e832b4f9-22b9-40b4-838e-2abb3253af4d",
+    "cycle_number": 3,
+    "start_date": "2026-04-18",
+    "end_date": null,
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-16T15:34:06.899121+00:00"
+  },
+  {
+    "id": "4a76031d-7ece-43df-a370-e716a81beab5",
+    "device_id": "4b653ad5-6a3b-472f-b084-6ee96c497f76",
+    "cycle_number": 1,
+    "start_date": "2026-04-14",
+    "end_date": "2026-04-23",
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-22T20:32:43.494738+00:00"
+  },
+  {
+    "id": "dc248fdf-9777-4b4f-862f-7b239e225064",
+    "device_id": "4b653ad5-6a3b-472f-b084-6ee96c497f76",
+    "cycle_number": 2,
+    "start_date": "2026-04-24",
+    "end_date": null,
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-22T20:32:43.494738+00:00"
+  },
+  {
+    "id": "3222c90c-c8d8-48a1-b8c8-c015afcb62a2",
+    "device_id": "d23c46db-ccfc-4e6e-ab09-65ef53a27d3d",
+    "cycle_number": 1,
+    "start_date": "2026-04-19",
+    "end_date": "2026-04-22",
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-23T08:19:44.174633+00:00"
+  },
+  {
+    "id": "c69d7731-6e96-40e2-a1fb-30a420e3a605",
+    "device_id": "d23c46db-ccfc-4e6e-ab09-65ef53a27d3d",
+    "cycle_number": 2,
+    "start_date": "2026-04-23",
+    "end_date": "2026-04-23",
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-23T08:19:44.174633+00:00"
+  },
+  {
+    "id": "5e05877a-3067-444d-887b-069d4980c99b",
+    "device_id": "d23c46db-ccfc-4e6e-ab09-65ef53a27d3d",
+    "cycle_number": 3,
+    "start_date": "2026-04-24",
+    "end_date": null,
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-23T08:19:44.174633+00:00"
+  },
+  {
+    "id": "5df423b8-d3c4-4c00-8eba-bf96736f5cb7",
+    "device_id": "0f8e423b-8fdd-4ada-b1e5-9f66d1e3fc07",
+    "cycle_number": 1,
+    "start_date": "2026-04-19",
+    "end_date": null,
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-19T03:43:52.959074+00:00"
+  },
+  {
+    "id": "e09572f8-57dd-4633-817c-1e2d61821077",
+    "device_id": "0cd88852-add0-4de9-a067-a3cbe621f3df",
+    "cycle_number": 1,
+    "start_date": "2026-04-19",
+    "end_date": null,
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-19T03:44:23.602624+00:00"
+  },
+  {
+    "id": "13e8f568-d1d4-4190-9cc4-748b537a04d3",
+    "device_id": "72aead0b-6995-423b-8729-afbc7749402d",
+    "cycle_number": 1,
+    "start_date": "2026-04-19",
+    "end_date": null,
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-19T04:22:58.717754+00:00"
+  },
+  {
+    "id": "cb858ecb-cdba-47b2-b94d-f2d4167c220e",
+    "device_id": "649ddef8-2e33-43d4-919e-83340748bd21",
+    "cycle_number": 1,
+    "start_date": "2026-04-19",
+    "end_date": null,
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-19T04:24:39.905972+00:00"
+  },
+  {
+    "id": "de0e6c15-1fdc-42ee-b387-9dd29f85d354",
+    "device_id": "32bec0ec-c09e-4928-b660-8e26182fe8b0",
+    "cycle_number": 1,
+    "start_date": "2026-04-19",
+    "end_date": null,
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-19T04:25:12.265985+00:00"
+  },
+  {
+    "id": "494f0c0a-ec81-47e5-9e96-4e01271307c1",
+    "device_id": "fa94f03a-c3e7-4f19-a3aa-80211c741d12",
+    "cycle_number": 1,
+    "start_date": "2026-04-19",
+    "end_date": null,
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-19T04:25:42.340771+00:00"
+  },
+  {
+    "id": "f190d435-e058-453e-9636-8626c4ae5d86",
+    "device_id": "e65c891c-6646-46ff-a5a4-3dd29a69e0dc",
+    "cycle_number": 1,
+    "start_date": "2026-04-19",
+    "end_date": "2026-04-22",
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-25T10:28:18.78385+00:00"
+  },
+  {
+    "id": "5de5d629-b047-4f8d-99e0-cfaa8fd57778",
+    "device_id": "e65c891c-6646-46ff-a5a4-3dd29a69e0dc",
+    "cycle_number": 2,
+    "start_date": "2026-04-23",
+    "end_date": "2026-04-23",
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-25T10:28:18.78385+00:00"
+  },
+  {
+    "id": "34d94cf4-67ed-40e7-8dba-e9ea0a532098",
+    "device_id": "e65c891c-6646-46ff-a5a4-3dd29a69e0dc",
+    "cycle_number": 3,
+    "start_date": "2026-04-24",
+    "end_date": "2026-04-24",
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-25T10:28:18.78385+00:00"
+  },
+  {
+    "id": "3e0eec60-1432-4a7e-b518-6f92ef116461",
+    "device_id": "e65c891c-6646-46ff-a5a4-3dd29a69e0dc",
+    "cycle_number": 4,
+    "start_date": "2026-04-25",
+    "end_date": null,
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-25T10:28:18.78385+00:00"
+  },
+  {
+    "id": "93160288-02b7-46ee-9e76-d00f01e0ec53",
+    "device_id": "1b7182d1-3583-45d7-8dd1-7c9738283287",
+    "cycle_number": 1,
+    "start_date": "2026-04-15",
+    "end_date": "2026-04-21",
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-25T10:28:30.877219+00:00"
+  },
+  {
+    "id": "0ac6675f-c6f5-454d-a8e0-479cca150013",
+    "device_id": "1b7182d1-3583-45d7-8dd1-7c9738283287",
+    "cycle_number": 2,
+    "start_date": "2026-04-22",
+    "end_date": null,
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-25T10:28:30.877219+00:00"
+  },
+  {
+    "id": "5cf99781-f24c-416b-88aa-d237e92dfaa4",
+    "device_id": "90c122be-503b-41ae-9379-f409190bdc37",
+    "cycle_number": 1,
+    "start_date": "2026-04-19",
+    "end_date": "2026-04-24",
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-25T10:28:39.167649+00:00"
+  },
+  {
+    "id": "afef03fd-2cef-4a0c-8b19-d645e83aaa8b",
+    "device_id": "90c122be-503b-41ae-9379-f409190bdc37",
+    "cycle_number": 2,
+    "start_date": "2026-04-25",
+    "end_date": null,
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-25T10:28:39.167649+00:00"
+  },
+  {
+    "id": "3591afca-b4e4-4f68-89f5-7f6d03ad3c06",
+    "device_id": "8759bae2-50b0-4a09-bf7e-8c907587621f",
+    "cycle_number": 1,
+    "start_date": "2026-04-14",
+    "end_date": "2026-04-24",
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-25T10:28:47.113561+00:00"
+  },
+  {
+    "id": "5826586d-6820-4563-9e83-75dd279fff9e",
+    "device_id": "8759bae2-50b0-4a09-bf7e-8c907587621f",
+    "cycle_number": 2,
+    "start_date": "2026-04-25",
+    "end_date": null,
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-25T10:28:47.113561+00:00"
+  },
+  {
+    "id": "63147dac-be80-45e0-9718-6f36a4dfa905",
+    "device_id": "c15c8cf9-5aba-4bbc-8968-79735ef31909",
+    "cycle_number": 1,
+    "start_date": "2026-04-15",
+    "end_date": "2026-04-16",
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-25T10:28:52.147461+00:00"
+  },
+  {
+    "id": "b192b99a-9421-4ab3-ba2a-e3abde505538",
+    "device_id": "c15c8cf9-5aba-4bbc-8968-79735ef31909",
+    "cycle_number": 2,
+    "start_date": "2026-04-17",
+    "end_date": "2026-04-17",
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-25T10:28:52.147461+00:00"
+  },
+  {
+    "id": "5067b3db-1838-40db-88cf-ad835b044662",
+    "device_id": "c15c8cf9-5aba-4bbc-8968-79735ef31909",
+    "cycle_number": 3,
+    "start_date": "2026-04-18",
+    "end_date": null,
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-25T10:28:52.147461+00:00"
+  },
+  {
+    "id": "1c0f870b-1d41-40ac-8b27-69a2accbc046",
+    "device_id": "7c6343c2-e2ff-4a08-9256-c02095ef6d08",
+    "cycle_number": 1,
+    "start_date": "2026-04-15",
+    "end_date": "2026-04-20",
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-20T20:12:24.270528+00:00"
+  },
+  {
+    "id": "89d9cc25-100f-4758-9c4c-58aff624aa67",
+    "device_id": "7c6343c2-e2ff-4a08-9256-c02095ef6d08",
+    "cycle_number": 2,
+    "start_date": "2026-04-21",
+    "end_date": "2026-04-21",
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-20T20:12:24.270528+00:00"
+  },
+  {
+    "id": "d735750a-67f9-484e-984c-e467f9820ba7",
+    "device_id": "7c6343c2-e2ff-4a08-9256-c02095ef6d08",
+    "cycle_number": 3,
+    "start_date": "2026-04-22",
+    "end_date": null,
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-20T20:12:24.270528+00:00"
+  },
+  {
+    "id": "c0e2a5eb-4b21-4473-8f1b-4a612cf000ff",
+    "device_id": "f0162786-0b75-4623-8c1e-ef4818121966",
+    "cycle_number": 1,
+    "start_date": "2026-04-15",
+    "end_date": "2026-04-20",
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-20T20:12:39.211865+00:00"
+  },
+  {
+    "id": "3895240c-8d9a-4c72-af2b-81c621538c25",
+    "device_id": "f0162786-0b75-4623-8c1e-ef4818121966",
+    "cycle_number": 2,
+    "start_date": "2026-04-21",
+    "end_date": "2026-04-21",
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-20T20:12:39.211865+00:00"
+  },
+  {
+    "id": "e9925773-00ac-46e0-a02b-a76c41c2aca3",
+    "device_id": "f0162786-0b75-4623-8c1e-ef4818121966",
+    "cycle_number": 3,
+    "start_date": "2026-04-22",
+    "end_date": null,
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-20T20:12:39.211865+00:00"
+  },
+  {
+    "id": "6b697781-eb5b-4526-89b1-ab6732d6c606",
+    "device_id": "e1ce78cc-76dc-47ab-aaa4-bf4e96f7b810",
+    "cycle_number": 1,
+    "start_date": "2026-04-19",
+    "end_date": "2026-04-20",
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-20T20:13:04.15811+00:00"
+  },
+  {
+    "id": "6db7d325-92c4-4e81-998c-b031d34cb707",
+    "device_id": "e1ce78cc-76dc-47ab-aaa4-bf4e96f7b810",
+    "cycle_number": 2,
+    "start_date": "2026-04-21",
+    "end_date": "2026-04-21",
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-20T20:13:04.15811+00:00"
+  },
+  {
+    "id": "59237a24-5dfc-459f-b8d7-0d7c7a8d785b",
+    "device_id": "e1ce78cc-76dc-47ab-aaa4-bf4e96f7b810",
+    "cycle_number": 3,
+    "start_date": "2026-04-22",
+    "end_date": null,
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-20T20:13:04.15811+00:00"
+  },
+  {
+    "id": "05b4271f-3a69-467a-bd5c-b1c47ca42bd1",
+    "device_id": "6984b57d-34bd-4ae6-85f6-d5c89e17af8d",
+    "cycle_number": 1,
+    "start_date": "2026-04-15",
+    "end_date": "2026-04-20",
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-20T20:13:14.173102+00:00"
+  },
+  {
+    "id": "5fe2b117-3c42-4b28-88c8-2b0428fe7bb4",
+    "device_id": "6984b57d-34bd-4ae6-85f6-d5c89e17af8d",
+    "cycle_number": 2,
+    "start_date": "2026-04-21",
+    "end_date": "2026-04-21",
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-20T20:13:14.173102+00:00"
+  },
+  {
+    "id": "55ed6e08-71eb-4489-852b-ad40a1317568",
+    "device_id": "6984b57d-34bd-4ae6-85f6-d5c89e17af8d",
+    "cycle_number": 3,
+    "start_date": "2026-04-22",
+    "end_date": null,
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-20T20:13:14.173102+00:00"
+  },
+  {
+    "id": "5d9db3c6-4382-43e5-ac56-401263c64660",
+    "device_id": "5c773737-7868-4ac0-ae76-7a7a91ae7665",
+    "cycle_number": 1,
+    "start_date": "2026-04-14",
+    "end_date": "2026-04-21",
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-24T10:46:30.063563+00:00"
+  },
+  {
+    "id": "8c0bb391-af40-40a2-a9a4-1c565b664dd7",
+    "device_id": "5c773737-7868-4ac0-ae76-7a7a91ae7665",
+    "cycle_number": 2,
+    "start_date": "2026-04-22",
+    "end_date": null,
+    "completed": false,
+    "notes": null,
+    "created_at": "2026-04-24T10:46:30.063563+00:00"
+  }
+]

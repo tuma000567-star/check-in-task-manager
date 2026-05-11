@@ -1,0 +1,13 @@
+{
+  "exported_at": "2026-05-11T00:34:58.491Z",
+  "project": "etlcdeshhpbdggugqznt",
+  "tables": {
+    "devices": 26,
+    "checkin_logs": 240,
+    "checkin_cycles": 66,
+    "daily_tasks": 155,
+    "invitations": 0,
+    "event_names": 5
+  },
+  "auth_users": 1
+}

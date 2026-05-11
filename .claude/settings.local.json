@@ -45,7 +45,11 @@
       "Bash(curl -s -H 'apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0bGNkZXNoaHBiZGdndWdxem50Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NjE4NzQ5MywiZXhwIjoyMDkxNzYzNDkzfQ.D65V25oXT-r4PaYBM0_MxmU52bd67NUyFDFqv5kF15A' -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0bGNkZXNoaHBiZGdndWdxem50Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NjE4NzQ5MywiZXhwIjoyMDkxNzYzNDkzfQ.D65V25oXT-r4PaYBM0_MxmU52bd67NUyFDFqv5kF15A' 'https://etlcdeshhpbdggugqznt.supabase.co/rest/v1/devices?select=name,group_name&limit=2')",
       "Bash(node -e \"const d=JSON.parse\\(require\\('fs'\\).readFileSync\\('/tmp/check.json','utf8'\\)\\); console.log\\(JSON.stringify\\(d, null, 2\\)\\)\")",
       "Bash(node -e \"let s='';process.stdin.on\\('data',d=>s+=d\\);process.stdin.on\\('end',\\(\\)=>{const a=JSON.parse\\(s\\);for\\(const r of a\\){const codes=[...\\(r.group_name||''\\)].map\\(c=>c.codePointAt\\(0\\).toString\\(16\\)\\).join\\(' '\\);console.log\\(r.name, '|', r.group_name, '|', codes\\);}}\\)\")",
-      "Bash(node fix-group.mjs)"
+      "Bash(node fix-group.mjs)",
+      "WebFetch(domain:st-system-orcin.vercel.app)",
+      "Bash(git add *)",
+      "Bash(git -c user.email=\"noreply@anthropic.com\" -c user.name=\"check-in-task-manager\" commit -q -m \"Backup: full data export 2026-04-29 \\(devices/logs/cycles/tasks/auth\\)\")",
+      "Bash(git push *)"
     ]
   }
 }
